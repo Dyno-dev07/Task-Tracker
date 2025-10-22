@@ -14,11 +14,10 @@ export const ThemeAnimationProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const triggerThemeAnimation = () => {
     setIsThemeAnimating(true);
-    // The animation duration is about 0.1s (visible) + 0.1s (delay) + 0.3s (exit) = 0.5s
-    // We'll set the timeout slightly longer to ensure CSS has time to apply.
+    // Increased timeout to ensure it covers the full application re-render
     setTimeout(() => {
       setIsThemeAnimating(false);
-    }, 600); // 600ms should be enough for the animation and CSS to settle
+    }, 1000); // 1000ms (1 second) should be ample time
   };
 
   return (
