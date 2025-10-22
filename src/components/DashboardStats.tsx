@@ -2,7 +2,7 @@
 
 import React from "react";
 import TaskStatsCard from "./TaskStatsCard";
-import { ListTodo, Hourglass, PlayCircle, CheckCircle } from "lucide-react"; // Changed XCircle to PlayCircle for in-progress
+import { ListTodo, Hourglass, PlayCircle, CheckCircle } from "lucide-react";
 
 interface DashboardStatsProps {
   totalTasks: number;
@@ -34,7 +34,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
       <TaskStatsCard
         title="In Progress"
         value={inProgressTasks}
-        icon={<PlayCircle />} {/* Changed icon */}
+        icon={<PlayCircle />}
         iconColor="text-orange-500 dark:text-orange-400"
       />
       <TaskStatsCard
