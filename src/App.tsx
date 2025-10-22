@@ -14,12 +14,19 @@ import AllTasksPage from "./pages/AllTasksPage";
 import SettingsPage from "./pages/SettingsPage"; // Import SettingsPage
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import { AnimatePresence } from "framer-motion";
+import React from "react"; // Import React for useEffect
 
 const queryClient = new QueryClient();
 
 // Create a wrapper component for routes that need PageTransitionWrapper
 const AnimatedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+
+  // Add a useEffect to log the HTML class on route changes
+  React.useEffect(() => {
+    console.log(`Route changed to: ${location.pathname}. Current HTML class:`, document.documentElement.className);
+  }, [location.pathname]);
+
   return (
     <PageTransitionWrapper key={location.pathname}>
       {children}
