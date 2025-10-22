@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+
+  React.useEffect(() => {
+    console.log("Current active theme:", theme);
+  }, [theme]);
 
   return (
     <DropdownMenu>
@@ -25,28 +29,28 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => { setTheme("light"); console.log("Attempting to set theme to light"); }}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => { setTheme("dark"); console.log("Attempting to set theme to dark"); }}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("green")}>
+        <DropdownMenuItem onClick={() => { setTheme("green"); console.log("Attempting to set theme to green"); }}>
           Green
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("purple")}>
+        <DropdownMenuItem onClick={() => { setTheme("purple"); console.log("Attempting to set theme to purple"); }}>
           Purple
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("blue")}>
+        <DropdownMenuItem onClick={() => { setTheme("blue"); console.log("Attempting to set theme to blue"); }}>
           Blue
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("pink")}>
+        <DropdownMenuItem onClick={() => { setTheme("pink"); console.log("Attempting to set theme to pink"); }}>
           Pink
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("orange")}>
+        <DropdownMenuItem onClick={() => { setTheme("orange"); console.log("Attempting to set theme to orange"); }}>
           Orange
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => { setTheme("system"); console.log("Attempting to set theme to system"); }}>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
