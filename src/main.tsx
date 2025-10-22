@@ -3,19 +3,19 @@ import App from "./App.tsx";
 import "./globals.css";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import { FontProvider } from "./context/FontContext.tsx";
-import { ThemeAnimationProvider } from "./context/ThemeAnimationContext.tsx";
+import { ThemeAnimationProvider, useThemeAnimation } from "./context/ThemeAnimationContext.tsx"; // Import useThemeAnimation
 import ThemeChangeAnimator from "./components/ThemeChangeAnimator.tsx";
-import { useTheme } from "next-themes"; // Import useTheme
+// Removed useTheme from next-themes as it's no longer needed for the key
 
 // A wrapper component to get the current theme and apply it as a key to the App
 const RootApp = () => {
-  const { theme } = useTheme(); // Get the current theme from next-themes
+  const { themeChangeCount } = useThemeAnimation(); // Get the themeChangeCount
 
   return (
     <FontProvider>
       <ThemeAnimationProvider>
-        {/* Use the theme as a key to force re-mount of App when theme changes */}
-        <App key={theme} />
+        {/* Use themeChangeCount as a key to force re-mount of App when theme changes */}
+        <App key={themeChangeCount} />
         <ThemeChangeAnimator />
       </ThemeAnimationProvider>
     </FontProvider>
