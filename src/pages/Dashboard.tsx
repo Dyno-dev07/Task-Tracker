@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import DashboardStats from "@/components/DashboardStats";
 import { Loader2 } from "lucide-react";
+import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Import PageTransitionWrapper
 
 // Define a type for your task data
 interface Task {
@@ -99,31 +98,32 @@ const Dashboard = () => {
   const isLoading = loadingTasks || loadingProfile;
 
   return (
-    <div className="flex flex-col items-center w-full"> {/* Adjusted width to fill parent */}
-      <div className="text-center space-y-4 mb-8 mt-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-          {isLoading ? "Loading Dashboard..." : greeting}
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400">
-          Here's an overview of your tasks.
-        </p>
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+    <PageTransitionWrapper>
+      <div className="flex flex-col items-center w-full">
+        <div className="text-center space-y-4 mb-8 mt-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            {isLoading ? "Loading Dashboard..." : greeting}
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400">
+            Here's an overview of your tasks.
+          </p>
         </div>
-      ) : (
-        <DashboardStats
-          totalTasks={totalTasks}
-          pendingTasks={pendingTasks}
-          inProgressTasks={inProgressTasks}
-          completedTasks={completedTasks}
-        />
-      )}
-      {/* Removed TaskNavigation, CreateTaskDialog, and Logout button */}
-      <MadeWithDyad />
-    </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          </div>
+        ) : (
+          <DashboardStats
+            totalTasks={totalTasks}
+            pendingTasks={pendingTasks}
+            inProgressTasks={inProgressTasks}
+            completedTasks={completedTasks}
+          />
+        )}
+        {/* Removed MadeWithDyad from Dashboard */}
+      </div>
+    </PageTransitionWrapper>
   );
 };
 

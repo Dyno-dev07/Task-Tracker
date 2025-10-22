@@ -9,7 +9,8 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AuthLayout from "./components/AuthLayout";
-import TaskListPage from "./pages/TaskListPage"; // Import the new TaskListPage
+import TaskListPage from "./pages/TaskListPage";
+import { AnimatePresence } from "framer-motion"; // Import AnimatePresence
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        {/* AnimatePresence is handled within AuthLayout for protected routes,
+            and individually for public routes. */}
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/signup" element={<SignUp />} />
@@ -26,7 +29,6 @@ const App = () => (
           {/* Protected routes */}
           <Route element={<AuthLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            {/* New routes for task lists */}
             <Route path="/tasks/:status" element={<TaskListPage />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

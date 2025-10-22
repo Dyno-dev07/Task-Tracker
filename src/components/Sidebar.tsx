@@ -5,13 +5,14 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { Home, ListTodo, Hourglass, PlayCircle, CheckCircle, LogOut, Menu } from "lucide-react";
+import { Home, ListTodo, Hourglass, PlayCircle, CheckCircle, LogOut, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   onLogout: () => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (open: boolean) => void;
+  isDesktopSidebarOpen: boolean; // New prop for desktop sidebar state
 }
 
 const navItems = [
@@ -21,7 +22,7 @@ const navItems = [
   { name: "Completed Tasks", path: "/tasks/completed", icon: CheckCircle },
 ];
 
-const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void }> = ({ onLogout, closeSidebar }) => {
+const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void; isDesktopSidebarOpen: boolean }> = ({ onLogout, closeSidebar, isDesktopSidebarOpen }) => {
   const location = useLocation();
 
   return (
@@ -36,27 +37,30 @@ const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void
               to={item.path}
               onClick={closeSidebar}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-foreground transition-all hover:bg-accent hover:text-accent-foreground",
-                isActive && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-foreground transition-all duration-200",
+                isActive
+                  ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                  : "hover:bg-accent hover:text-accent-foreground",
+                !isDesktopSidebarOpen && "justify-center" // Center icon when collapsed
               )}
             >
               <Icon className="h-4 w-4" />
-              {item.name}
+              {isDesktopSidebarOpen && item.name}
             </Link>
           );
         })}
       </nav>
       <div className="mt-auto">
-        <Button onClick={onLogout} className="w-full flex items-center gap-3">
+        <Button onClick={onLogout} className={cn("w-full flex items-center gap-3", !isDesktopSidebarOpen && "justify-center")}>
           <LogOut className="h-4 w-4" />
-          Logout
+          {isDesktopSidebarOpen && "Logout"}
         </Button>
       </div>
     </div>
   );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ onLogout, isMobileSidebarOpen, setIsMobileSidebarOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onLogout, isMobileSidebarOpen, setIsMobileSidebarOpen, isDesktopSidebarOpen }) => {
   const isMobile = useIsMobile();
 
   if (isMobile) {
@@ -69,15 +73,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, isMobileSidebarOpen, setIsM
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
-          <SidebarContent onLogout={onLogout} closeSidebar={() => setIsMobileSidebarOpen(false)} />
+          <SidebarContent onLogout={onLogout} closeSidebar={() => setIsMobileSidebarOpen(false)} isDesktopSidebarOpen={true} />
         </SheetContent>
       </Sheet>
     );
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r bg-background md:flex">
-      <SidebarContent onLogout={onLogout} />
+    <aside className={cn(
+      "fixed inset-y-0 left-0 z-20 hidden flex-col border-r bg-background transition-all duration-300 md:flex",
+      isDesktopSidebarOpen ? "w-64" : "w-20"
+    )}>
+      <SidebarContent onLogout={onLogout} isDesktopSidebarOpen={isDesktopSidebarOpen} />
     </aside>
   );
 };
