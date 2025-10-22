@@ -19,8 +19,9 @@ const pageVariants = {
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 260,
-      damping: 20,
+      stiffness: 150, // Reduced stiffness for a softer feel
+      damping: 25,    // Slightly increased damping to reduce oscillation
+      mass: 1,        // Default mass
     },
   },
   exit: {
