@@ -8,8 +8,7 @@ import React from "react";
 
 const AppWithThemeKey = () => {
   const { resolvedTheme } = useTheme();
-  // Add a console log to observe changes in resolvedTheme
-  console.log("AppWithThemeKey: resolvedTheme changed to", resolvedTheme);
+  // console.log("AppWithThemeKey: resolvedTheme changed to", resolvedTheme); // Removed console log
 
   return (
     <FontProvider>

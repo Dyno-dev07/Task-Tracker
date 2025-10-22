@@ -252,44 +252,44 @@
   }
 
   .orange {
-    --background: 30 40% 96%;
-    --foreground: 30 60% 20%;
+    --background: 30 100% 50%; /* Very distinct orange background */
+    --foreground: 0 0% 100%; /* White text for contrast */
 
-    --card: 30 40% 98%;
-    --card-foreground: 30 60% 20%;
+    --card: 30 100% 60%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 30 40% 98%;
-    --popover-foreground: 30 60% 20%;
+    --popover: 30 100% 60%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 30 50% 40%;
+    --primary: 30 100% 30%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 30% 85%;
-    --secondary-foreground: 30 60% 20%;
+    --secondary: 30 50% 80%;
+    --secondary-foreground: 30 100% 20%;
 
-    --muted: 30 20% 90%;
+    --muted: 30 40% 90%;
     --muted-foreground: 30 30% 50%;
 
-    --accent: 30 30% 85%;
-    --accent-foreground: 30 60% 20%;
+    --accent: 30 50% 80%;
+    --accent-foreground: 30 100% 20%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 25% 80%;
-    --input: 30 25% 80%;
-    --ring: 30 50% 40%;
+    --border: 30 70% 70%;
+    --input: 30 70% 70%;
+    --ring: 30 100% 30%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 30 40% 90%;
-    --sidebar-foreground: 30 60% 15%;
-    --sidebar-primary: 30 50% 35%;
+    --sidebar-background: 30 100% 40%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 30 100% 25%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 30% 75%;
-    --sidebar-accent-foreground: 30 60% 15%;
-    --sidebar-border: 30 25% 70%;
-    --sidebar-ring: 30 50% 35%;
+    --sidebar-accent: 30 70% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 30 70% 30%;
+    --sidebar-ring: 30 100% 25%;
   }
 }
 
