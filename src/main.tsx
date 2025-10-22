@@ -3,24 +3,23 @@ import App from "./App.tsx";
 import "./globals.css";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import { FontProvider } from "./context/FontContext.tsx";
-import { useTheme } from "next-themes"; // Import useTheme from next-themes
-import React from "react"; // Import React for useEffect
+import { useTheme } from "next-themes";
+import React from "react";
 
-// A wrapper component to get the current theme and apply it as a key to the App
 const AppWithThemeKey = () => {
-  const { resolvedTheme } = useTheme(); // Get the resolved theme from next-themes
+  const { resolvedTheme } = useTheme();
+  // Add a console log to observe changes in resolvedTheme
+  console.log("AppWithThemeKey: resolvedTheme changed to", resolvedTheme);
 
-  // Use the resolvedTheme as a key to force re-mount of App when the actual theme changes.
-  // This ensures all components re-evaluate their styles based on the new HTML class.
   return (
     <FontProvider>
-      <App key={resolvedTheme} /> {/* Render the new wrapper component */}
+      <App key={resolvedTheme} />
     </FontProvider>
   );
 };
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-    <AppWithThemeKey /> {/* Render the new wrapper component */}
+    <AppWithThemeKey />
   </ThemeProvider>
 );
