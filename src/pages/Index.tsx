@@ -2,6 +2,7 @@
 
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button"; // Added this import
 
 const Index = () => {
   return (
