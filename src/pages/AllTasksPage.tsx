@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
+import { motion } from "framer-motion"; // Import motion
 
 interface Task {
   id: string;
@@ -31,6 +32,22 @@ interface Task {
   due_date: string | null;
   created_at: string;
 }
+
+// Variants for the cascading animation
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1, // Stagger the animation of children by 0.1 seconds
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 10 } },
+};
 
 const AllTasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -158,30 +175,37 @@ const AllTasksPage: React.FC = () => {
           ) : tasks.length === 0 ? (
             <p className="text-lg text-gray-600 dark:text-gray-400">No tasks found with the current filters.</p>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <motion.div
+              className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
               {tasks.map((task) => (
-                <Card key={task.id} className="flex flex-col justify-between">
-                  <CardHeader>
-                    <CardTitle>{task.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-2 mt-2">
-                      <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
-                      <Badge variant="outline">{task.status}</Badge>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
-                    {task.due_date && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Due: {format(new Date(task.due_date), "PPP")}
+                <motion.div key={task.id} variants={itemVariants}>
+                  <Card className="flex flex-col justify-between">
+                    <CardHeader>
+                      <CardTitle>{task.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-2 mt-2">
+                        <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
+                        <Badge variant="outline">{task.status}</Badge>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
+                      {task.due_date && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Due: {format(new Date(task.due_date), "PPP")}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Created: {format(new Date(task.created_at), "PPP")}
                       </p>
-                    )}
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Created: {format(new Date(task.created_at), "PPP")}
-                    </p>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

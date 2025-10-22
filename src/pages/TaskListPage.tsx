@@ -4,12 +4,16 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Import PageTransitionWrapper
+import PageTransitionWrapper from "@/components/PageTransitionWrapper";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion"; // Import motion
 
 interface Task {
   id: string;
@@ -21,19 +25,44 @@ interface Task {
   created_at: string;
 }
 
+// Variants for the cascading animation
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1, // Stagger the animation of children by 0.1 seconds
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 10 } },
+};
+
 const TaskListPage: React.FC = () => {
   const { status } = useParams<{ status: string }>();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined); // New state for date filter
 
   const fetchTasksByStatus = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    let query = supabase
       .from("tasks")
       .select("*")
       .eq("status", status)
       .order("created_at", { ascending: false });
+
+    if (selectedDate) {
+      const startOfDay = format(selectedDate, "yyyy-MM-ddT00:00:00.000Z");
+      const endOfDay = format(selectedDate, "yyyy-MM-ddT23:59:59.999Z");
+      query = query.gte("created_at", startOfDay).lte("created_at", endOfDay);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       toast({
@@ -46,7 +75,7 @@ const TaskListPage: React.FC = () => {
       setTasks(data as Task[]);
     }
     setLoading(false);
-  }, [status, toast]);
+  }, [status, toast, selectedDate]); // Add selectedDate to dependencies
 
   useEffect(() => {
     fetchTasksByStatus();
@@ -83,10 +112,40 @@ const TaskListPage: React.FC = () => {
       <div className="flex flex-col items-center w-full">
         <div className="w-full max-w-4xl text-center space-y-6 mt-8">
           <div className="flex items-center justify-between mb-6">
-            {/* Removed "Back to Dashboard" button as sidebar is now primary navigation */}
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex-grow text-center">
               {getStatusTitle(status)}
             </h1>
+          </div>
+
+          {/* Calendar Filter */}
+          <div className="flex justify-center mb-6">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[200px] justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, "PPP") : <span>Filter by Date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  initialFocus
+                />
+                {selectedDate && (
+                  <div className="p-2">
+                    <Button variant="ghost" onClick={() => setSelectedDate(undefined)} className="w-full">Clear Date</Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
 
           {loading ? (
@@ -94,32 +153,39 @@ const TaskListPage: React.FC = () => {
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
           ) : tasks.length === 0 ? (
-            <p className="text-lg text-gray-600 dark:text-gray-400">No {status} tasks found.</p>
+            <p className="text-lg text-gray-600 dark:text-gray-400">No {status} tasks found with the current filters.</p>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <motion.div
+              className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
               {tasks.map((task) => (
-                <Card key={task.id} className="flex flex-col justify-between">
-                  <CardHeader>
-                    <CardTitle>{task.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-2 mt-2">
-                      <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
-                      <Badge variant="outline">{task.status}</Badge>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
-                    {task.due_date && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Due: {format(new Date(task.due_date), "PPP")}
+                <motion.div key={task.id} variants={itemVariants}>
+                  <Card className="flex flex-col justify-between h-full">
+                    <CardHeader>
+                      <CardTitle>{task.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-2 mt-2">
+                        <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
+                        <Badge variant="outline">{task.status}</Badge>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
+                      {task.due_date && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Due: {format(new Date(task.due_date), "PPP")}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Created: {format(new Date(task.created_at), "PPP")}
                       </p>
-                    )}
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Created: {format(new Date(task.created_at), "PPP")}
-                    </p>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
