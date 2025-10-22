@@ -11,11 +11,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useThemeAnimation } from "@/context/ThemeAnimationContext"; // Import useThemeAnimation
 
 export function ThemeToggle() {
   const { setTheme } = useTheme();
+  const { triggerThemeAnimation } = useThemeAnimation(); // Use the new hook
 
   const handleThemeChange = (newTheme: string) => {
+    triggerThemeAnimation(); // Trigger animation BEFORE changing theme
     setTheme(newTheme);
   };
 
