@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import DashboardStats from "@/components/DashboardStats";
 import { Loader2, CalendarIcon } from "lucide-react";
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
-import LatestTasksSection from "@/components/LatestTasksSection"; // Import LatestTasksSection
+import LatestTasksSection from "@/components/LatestTasksSection";
 import {
   Select,
   SelectContent,
@@ -32,15 +32,6 @@ interface Task {
   due_date: string | null;
   created_at: string;
 }
-
-const greetings = [
-  "Hello",
-  "Hi there",
-  "Welcome back",
-  "Great to see you",
-  "Howdy",
-  "Greetings",
-];
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -105,8 +96,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (userFirstName) {
-      const randomIndex = Math.floor(Math.random() * greetings.length);
-      setGreeting(`${greetings[randomIndex]}, ${userFirstName}!`);
+      setGreeting(`Welcome to your tasks, ${userFirstName}!`);
     } else {
       setGreeting("Welcome to Your Dashboard!");
     }
@@ -148,7 +138,7 @@ const Dashboard = () => {
             {isLoading ? "Loading Dashboard..." : greeting}
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Here's an overview of your tasks.
+            Check if you're slayin' your tasks or just existing in the office
           </p>
         </div>
 
