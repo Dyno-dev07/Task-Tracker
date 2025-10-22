@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-type Font = "inter" | "roboto" | "poppins"; // Define available fonts
+type Font = "inter" | "roboto" | "poppins" | "times-new-roman" | "montserrat" | "playfair-display" | "bebas-neue"; // Define available fonts
 
 interface FontContextType {
   font: Font;
@@ -21,8 +21,14 @@ export const FontProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Remove existing font classes before adding the new one
+      document.body.className.split(' ').forEach(cls => {
+        if (cls.startsWith('font-')) {
+          document.body.classList.remove(cls);
+        }
+      });
+      document.body.classList.add(`font-${font}`); // Apply font class to body
       localStorage.setItem("selectedFont", font);
-      document.body.className = `font-${font}`; // Apply font class to body
     }
   }, [font]);
 

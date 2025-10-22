@@ -25,6 +25,10 @@ export default {
         inter: ["Inter", "sans-serif"],
         roboto: ["Roboto", "sans-serif"],
         poppins: ["Poppins", "sans-serif"],
+        "times-new-roman": ["Times New Roman", "serif"],
+        montserrat: ["Montserrat", "sans-serif"],
+        "playfair-display": ["Playfair Display", "serif"],
+        "bebas-neue": ["Bebas Neue", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
