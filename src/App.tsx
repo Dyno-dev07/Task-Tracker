@@ -22,11 +22,6 @@ const queryClient = new QueryClient();
 const AnimatedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
-  // Add a useEffect to log the HTML class on route changes
-  React.useEffect(() => {
-    console.log(`Route changed to: ${location.pathname}. Current HTML class:`, document.documentElement.className);
-  }, [location.pathname]);
-
   return (
     <PageTransitionWrapper key={location.pathname}>
       {children}
