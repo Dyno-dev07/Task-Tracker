@@ -12,11 +12,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import PageTransitionWrapper from "./PageTransitionWrapper";
 import { AnimatePresence } from "framer-motion";
-import SplashScreen from "./SplashScreen"; // Import SplashScreen
+import SplashScreen from "./SplashScreen";
 
 const AuthLayout = () => {
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoadingInitialAuthContent, setIsLoadingInitialAuthContent] = useState(true); // Global initial load state
+  const [isLoadingInitialAuthContent, setIsLoadingInitialAuthContent] = useState(true);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -27,12 +27,15 @@ const AuthLayout = () => {
 
   useEffect(() => {
     const checkAuthAndInitialData = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const [sessionData, minDelay] = await Promise.all([
+        supabase.auth.getSession(),
+        new Promise(resolve => setTimeout(resolve, 2000)) // 2-second minimum delay
+      ]);
+
+      const currentSession = sessionData.data.session;
       setSession(currentSession);
 
       if (currentSession) {
-        // Fetch a minimal piece of data to signify "initial content ready"
-        // This runs only once due to the empty dependency array of the useEffect.
         const { count, error } = await supabase
           .from("tasks")
           .select("*", { count: "exact", head: true })
@@ -41,10 +44,8 @@ const AuthLayout = () => {
         if (error) {
           console.error("Error fetching initial task count for splash screen:", error);
         }
-        setIsLoadingInitialAuthContent(false);
-      } else {
-        setIsLoadingInitialAuthContent(false); // No session, so initial content is not loading, will redirect.
       }
+      setIsLoadingInitialAuthContent(false);
     };
 
     checkAuthAndInitialData();
@@ -52,12 +53,12 @@ const AuthLayout = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (!session) {
-        setIsLoadingInitialAuthContent(false); // Ensure splash screen is hidden if logged out
+        setIsLoadingInitialAuthContent(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []); // Run only once on mount
+  }, []);
 
   useEffect(() => {
     if (!isLoadingInitialAuthContent && !session) {
