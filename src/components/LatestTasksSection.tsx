@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { motion } from "framer-motion"; // Import motion
+import EditTaskDialog from "./EditTaskDialog"; // Import EditTaskDialog
+import DeleteTaskDialog from "./DeleteTaskDialog"; // Import DeleteTaskDialog
 
 interface Task {
   id: string;
@@ -21,6 +23,7 @@ interface Task {
 interface LatestTasksSectionProps {
   tasks: Task[];
   totalTaskCount: number;
+  onTaskChange: () => void; // Callback for when a task is updated or deleted
 }
 
 // Variants for the cascading animation
@@ -39,7 +42,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 10 } },
 };
 
-const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTaskCount }) => {
+const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTaskCount, onTaskChange }) => {
   const getPriorityBadgeVariant = (priority: "low" | "medium" | "high") => {
     switch (priority) {
       case "low":
@@ -67,9 +70,15 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
         >
           {tasks.map((task) => (
             <motion.div key={task.id} variants={itemVariants}>
-              <Card className="flex flex-col justify-between h-full"> {/* Added h-full for consistent card height */}
+              <Card className="flex flex-col justify-between h-full">
                 <CardHeader>
-                  <CardTitle>{task.title}</CardTitle>
+                  <div className="flex justify-between items-start">
+                    <CardTitle>{task.title}</CardTitle>
+                    <div className="flex gap-1">
+                      <EditTaskDialog task={task} onTaskUpdated={onTaskChange} />
+                      <DeleteTaskDialog taskId={task.id} onTaskDeleted={onTaskChange} />
+                    </div>
+                  </div>
                   <CardDescription className="flex items-center gap-2 mt-2">
                     <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                     <Badge variant="outline">{task.status}</Badge>

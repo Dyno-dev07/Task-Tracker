@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,14 +33,14 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, Plus } from "lucide-react"; // Import Plus icon
+import { CalendarIcon, Loader2, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Title is required." }).max(100, { message: "Title must not exceed 100 characters." }),
-  description: z.string().max(500, { message: "Description must not exceed 500 characters." }).optional(),
+  description: z.string().max(500, { message: "Description must not exceed 500 characters." }).optional().nullable(),
   status: z.enum(["pending", "in-progress", "completed"], {
     required_error: "Please select a status.",
   }),
@@ -50,11 +50,22 @@ const formSchema = z.object({
   due_date: z.date().optional().nullable(),
 });
 
-interface CreateTaskDialogProps {
-  onTaskCreated: () => void;
+interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  status: "pending" | "in-progress" | "completed";
+  priority: "low" | "medium" | "high";
+  due_date: string | null;
+  created_at: string;
 }
 
-const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) => {
+interface EditTaskDialogProps {
+  task: Task;
+  onTaskUpdated: () => void;
+}
+
+const EditTaskDialog: React.FC<EditTaskDialogProps> = ({ task, onTaskUpdated }) => {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -62,44 +73,52 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) =>
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      status: "pending",
-      priority: "medium",
-      due_date: undefined,
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      due_date: task.due_date ? new Date(task.due_date) : undefined,
     },
   });
+
+  // Reset form values when the dialog opens or task prop changes
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        due_date: task.due_date ? new Date(task.due_date) : undefined,
+      });
+    }
+  }, [open, task, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error("User not authenticated.");
-      }
-
-      const { error } = await supabase.from("tasks").insert({
-        user_id: user.id,
-        title: values.title,
-        description: values.description,
-        status: values.status,
-        priority: values.priority,
-        due_date: values.due_date ? values.due_date.toISOString() : null,
-      });
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          title: values.title,
+          description: values.description,
+          status: values.status,
+          priority: values.priority,
+          due_date: values.due_date ? values.due_date.toISOString() : null,
+        })
+        .eq("id", task.id);
 
       if (error) throw error;
 
       toast({
-        title: "Task Created!",
-        description: "Your new task has been successfully added.",
+        title: "Task Updated!",
+        description: "Your task has been successfully updated.",
       });
-      form.reset();
       setOpen(false);
-      onTaskCreated(); // Notify parent to refresh tasks
+      onTaskUpdated(); // Notify parent to refresh tasks
     } catch (error: any) {
       toast({
-        title: "Failed to create task",
+        title: "Failed to update task",
         description: error.message || "An unexpected error occurred.",
         variant: "destructive",
       });
@@ -111,15 +130,16 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) =>
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Create New Task
+        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+          <Edit className="h-4 w-4" />
+          <span className="sr-only">Edit task</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
-            Fill in the details below to add a new task to your list.
+            Make changes to your task here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -156,7 +176,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) =>
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select task status" />
@@ -178,7 +198,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) =>
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select task priority" />
@@ -236,10 +256,10 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) =>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                "Create Task"
+                "Save Changes"
               )}
             </Button>
           </form>
@@ -249,4 +269,4 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) =>
   );
 };
 
-export default CreateTaskDialog;
+export default EditTaskDialog;

@@ -222,7 +222,7 @@ const Dashboard = () => {
               </Select>
             </div>
 
-            <LatestTasksSection tasks={filteredDashboardTasks} totalTaskCount={totalTasks} />
+            <LatestTasksSection tasks={filteredDashboardTasks} totalTaskCount={totalTasks} onTaskChange={fetchTasks} />
           </>
         )}
       </div>

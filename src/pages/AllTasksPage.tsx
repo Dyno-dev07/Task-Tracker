@@ -22,6 +22,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { motion } from "framer-motion"; // Import motion
+import EditTaskDialog from "@/components/EditTaskDialog"; // Import EditTaskDialog
+import DeleteTaskDialog from "@/components/DeleteTaskDialog"; // Import DeleteTaskDialog
 
 interface Task {
   id: string;
@@ -185,7 +187,13 @@ const AllTasksPage: React.FC = () => {
                 <motion.div key={task.id} variants={itemVariants}>
                   <Card className="flex flex-col justify-between">
                     <CardHeader>
-                      <CardTitle>{task.title}</CardTitle>
+                      <div className="flex justify-between items-start">
+                        <CardTitle>{task.title}</CardTitle>
+                        <div className="flex gap-1">
+                          <EditTaskDialog task={task} onTaskUpdated={fetchAllTasks} />
+                          <DeleteTaskDialog taskId={task.id} onTaskDeleted={fetchAllTasks} />
+                        </div>
+                      </div>
                       <CardDescription className="flex items-center gap-2 mt-2">
                         <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                         <Badge variant="outline">{task.status}</Badge>

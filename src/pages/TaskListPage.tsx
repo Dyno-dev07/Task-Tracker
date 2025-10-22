@@ -14,6 +14,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion"; // Import motion
+import EditTaskDialog from "@/components/EditTaskDialog"; // Import EditTaskDialog
+import DeleteTaskDialog from "@/components/DeleteTaskDialog"; // Import DeleteTaskDialog
 
 interface Task {
   id: string;
@@ -165,7 +167,13 @@ const TaskListPage: React.FC = () => {
                 <motion.div key={task.id} variants={itemVariants}>
                   <Card className="flex flex-col justify-between h-full">
                     <CardHeader>
-                      <CardTitle>{task.title}</CardTitle>
+                      <div className="flex justify-between items-start">
+                        <CardTitle>{task.title}</CardTitle>
+                        <div className="flex gap-1">
+                          <EditTaskDialog task={task} onTaskUpdated={fetchTasksByStatus} />
+                          <DeleteTaskDialog taskId={task.id} onTaskDeleted={fetchTasksByStatus} />
+                        </div>
+                      </div>
                       <CardDescription className="flex items-center gap-2 mt-2">
                         <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                         <Badge variant="outline">{task.status}</Badge>
