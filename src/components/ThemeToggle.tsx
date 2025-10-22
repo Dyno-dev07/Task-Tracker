@@ -13,21 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function ThemeToggle() {
-  const { setTheme, theme } = useTheme();
-
-  React.useEffect(() => {
-    console.log("ThemeToggle mounted. Current active theme (from useTheme):", theme);
-    // Also log the class on the html element to verify next-themes is applying it
-    console.log("HTML class on mount:", document.documentElement.className);
-  }, [theme]); // Depend on theme to log changes
+  const { setTheme } = useTheme();
 
   const handleThemeChange = (newTheme: string) => {
-    console.log(`Attempting to set theme to: ${newTheme}`);
     setTheme(newTheme);
-    // Use a small timeout to allow next-themes to update the DOM, then check
-    setTimeout(() => {
-      console.log(`HTML class after setting ${newTheme}:`, document.documentElement.className);
-    }, 50); // A small delay to ensure DOM update
   };
 
   return (
