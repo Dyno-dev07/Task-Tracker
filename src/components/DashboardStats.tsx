@@ -24,24 +24,28 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
         value={totalTasks}
         icon={<ListTodo />}
         iconColor="text-blue-500 dark:text-blue-400"
+        to="/dashboard" // Link to dashboard itself or a general tasks page
       />
       <TaskStatsCard
         title="Pending Tasks"
         value={pendingTasks}
         icon={<Hourglass />}
         iconColor="text-yellow-500 dark:text-yellow-400"
+        to="/tasks/pending"
       />
       <TaskStatsCard
         title="In Progress"
         value={inProgressTasks}
         icon={<PlayCircle />}
         iconColor="text-orange-500 dark:text-orange-400"
+        to="/tasks/in-progress"
       />
       <TaskStatsCard
         title="Completed Tasks"
         value={completedTasks}
         icon={<CheckCircle />}
         iconColor="text-green-500 dark:text-green-400"
+        to="/tasks/completed"
       />
     </div>
   );
