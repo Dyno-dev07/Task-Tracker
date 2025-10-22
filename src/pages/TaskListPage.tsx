@@ -78,18 +78,13 @@ const TaskListPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex flex-col items-center w-full"> {/* Adjusted width to fill parent */}
       <div className="w-full max-w-4xl text-center space-y-6 mt-8">
         <div className="flex items-center justify-between mb-6">
-          <Link to="/dashboard">
-            <Button variant="outline" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-            </Button>
-          </Link>
+          {/* Removed "Back to Dashboard" button as sidebar is now primary navigation */}
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex-grow text-center">
             {getStatusTitle(status)}
           </h1>
-          <div className="w-[180px]"></div> {/* Placeholder to balance the header */}
         </div>
 
         {loading ? (

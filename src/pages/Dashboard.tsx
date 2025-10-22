@@ -7,8 +7,6 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import DashboardStats from "@/components/DashboardStats";
-import CreateTaskDialog from "@/components/CreateTaskDialog";
-import TaskNavigation from "@/components/TaskNavigation"; // Import TaskNavigation
 import { Loader2 } from "lucide-react";
 
 // Define a type for your task data
@@ -93,23 +91,6 @@ const Dashboard = () => {
     }
   }, [userFirstName]);
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Logout Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
-      });
-      navigate("/login");
-    }
-  };
-
   const totalTasks = tasks.length;
   const pendingTasks = tasks.filter((task) => task.status === "pending").length;
   const inProgressTasks = tasks.filter((task) => task.status === "in-progress").length;
@@ -118,7 +99,7 @@ const Dashboard = () => {
   const isLoading = loadingTasks || loadingProfile;
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex flex-col items-center w-full"> {/* Adjusted width to fill parent */}
       <div className="text-center space-y-4 mb-8 mt-8">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
           {isLoading ? "Loading Dashboard..." : greeting}
@@ -140,16 +121,7 @@ const Dashboard = () => {
           completedTasks={completedTasks}
         />
       )}
-
-      <div className="mt-8 flex flex-col items-center space-y-4">
-        <TaskNavigation /> {/* Add the navigation component */}
-        <div className="flex space-x-4">
-          <CreateTaskDialog onTaskCreated={fetchTasks} />
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
-        </div>
-      </div>
+      {/* Removed TaskNavigation, CreateTaskDialog, and Logout button */}
       <MadeWithDyad />
     </div>
   );
