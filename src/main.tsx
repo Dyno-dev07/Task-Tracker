@@ -3,27 +3,25 @@ import App from "./App.tsx";
 import "./globals.css";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import { FontProvider } from "./context/FontContext.tsx";
-import { ThemeAnimationProvider, useThemeAnimation } from "./context/ThemeAnimationContext.tsx"; // Import useThemeAnimation
+import { ThemeAnimationProvider, useThemeAnimation } from "./context/ThemeAnimationContext.tsx";
 import ThemeChangeAnimator from "./components/ThemeChangeAnimator.tsx";
-// Removed useTheme from next-themes as it's no longer needed for the key
 
-// A wrapper component to get the current theme and apply it as a key to the App
-const RootApp = () => {
-  const { themeChangeCount } = useThemeAnimation(); // Get the themeChangeCount
+// This component will consume the ThemeAnimationContext
+const AppWithThemeAnimationKey = () => {
+  const { themeChangeCount } = useThemeAnimation();
 
   return (
-    <FontProvider>
-      <ThemeAnimationProvider>
-        {/* Use themeChangeCount as a key to force re-mount of App when theme changes */}
-        <App key={themeChangeCount} />
-        <ThemeChangeAnimator />
-      </ThemeAnimationProvider>
+    <FontProvider> {/* FontProvider needs to wrap App */}
+      <App key={themeChangeCount} />
+      <ThemeChangeAnimator />
     </FontProvider>
   );
 };
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-    <RootApp /> {/* Render the new wrapper component */}
+    <ThemeAnimationProvider> {/* ThemeAnimationProvider must wrap AppWithThemeAnimationKey */}
+      <AppWithThemeAnimationKey />
+    </ThemeAnimationProvider>
   </ThemeProvider>
 );
