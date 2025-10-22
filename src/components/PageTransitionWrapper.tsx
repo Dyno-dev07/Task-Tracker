@@ -19,9 +19,9 @@ const pageVariants = {
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 150, // Reduced stiffness for a softer feel
-      damping: 25,    // Slightly increased damping to reduce oscillation
-      mass: 1,        // Default mass
+      stiffness: 150,
+      damping: 25,
+      mass: 1,
     },
   },
   exit: {
@@ -41,7 +41,7 @@ const PageTransitionWrapper: React.FC<PageTransitionWrapperProps> = ({ children 
       initial="initial"
       animate="animate"
       exit="exit"
-      className="w-full h-full"
+      className="w-full h-full absolute inset-0 overflow-hidden" // Added absolute, inset-0, and overflow-hidden
     >
       {children}
     </motion.div>

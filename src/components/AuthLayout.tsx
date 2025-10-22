@@ -10,18 +10,18 @@ import Header from "./Header";
 import CreateTaskDialog from "./CreateTaskDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
-import PageTransitionWrapper from "./PageTransitionWrapper"; // Import PageTransitionWrapper
-import { AnimatePresence } from "framer-motion"; // Import AnimatePresence
+import PageTransitionWrapper from "./PageTransitionWrapper";
+import { AnimatePresence } from "framer-motion";
 
 const AuthLayout = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true); // New state for desktop sidebar
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const location = useLocation(); // For AnimatePresence key
+  const location = useLocation();
 
   useEffect(() => {
     const getSession = async () => {
@@ -67,8 +67,6 @@ const AuthLayout = () => {
     if (isMobile) {
       setIsMobileSidebarOpen(false);
     }
-    // In a real app, you might want to trigger a re-fetch of tasks in the Dashboard/TaskListPage.
-    // For this example, we'll just close the sidebar if it's open.
   };
 
   if (loading) {
@@ -80,7 +78,7 @@ const AuthLayout = () => {
   }
 
   if (!session) {
-    return null; // Will be redirected by useEffect
+    return null;
   }
 
   const sidebarWidthClass = isDesktopSidebarOpen ? "md:w-64" : "md:w-20";
@@ -101,7 +99,7 @@ const AuthLayout = () => {
           onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
         />
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 relative"> {/* Added 'relative' here */}
           <AnimatePresence mode="wait">
             <PageTransitionWrapper key={location.pathname}>
               <Outlet />
@@ -113,7 +111,6 @@ const AuthLayout = () => {
             <CreateTaskDialog onTaskCreated={handleTaskCreated} />
           </div>
         )}
-        {/* Removed MadeWithDyad from AuthLayout */}
       </div>
     </div>
   );
