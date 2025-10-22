@@ -4,12 +4,19 @@ import "./globals.css";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import { FontProvider } from "./context/FontContext.tsx";
 import { useTheme } from "next-themes";
-import React from "react";
+import React, { useEffect } from "react"; // Import useEffect
 
 const AppWithThemeKey = () => {
   const { resolvedTheme } = useTheme();
-  // Re-adding console log to observe changes in resolvedTheme for all themes
   console.log("AppWithThemeKey: resolvedTheme changed to", resolvedTheme);
+
+  // Explicitly set the class on the document.documentElement (which is <html>)
+  // This ensures the theme class is always applied directly when resolvedTheme changes.
+  useEffect(() => {
+    if (resolvedTheme) {
+      document.documentElement.className = resolvedTheme;
+    }
+  }, [resolvedTheme]);
 
   return (
     <FontProvider>
