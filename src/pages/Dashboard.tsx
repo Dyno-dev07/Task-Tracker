@@ -5,15 +5,31 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import DashboardStats from "@/components/DashboardStats";
-import { Loader2 } from "lucide-react";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Import PageTransitionWrapper
+import { Loader2, CalendarIcon } from "lucide-react";
+import PageTransitionWrapper from "@/components/PageTransitionWrapper";
+import LatestTasksSection from "@/components/LatestTasksSection"; // Import LatestTasksSection
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 // Define a type for your task data
 interface Task {
   id: string;
   user_id: string;
   title: string;
+  description: string | null;
   status: "pending" | "in-progress" | "completed";
+  priority: "low" | "medium" | "high";
+  due_date: string | null;
   created_at: string;
 }
 
@@ -29,11 +45,17 @@ const greetings = [
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [allTasks, setAllTasks] = useState<Task[]>([]); // Store all tasks for stats
+  const [filteredDashboardTasks, setFilteredDashboardTasks] = useState<Task[]>([]); // Tasks for the dashboard section
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [greeting, setGreeting] = useState<string>("");
   const [loadingProfile, setLoadingProfile] = useState(true);
+
+  // Filter states for dashboard tasks
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
+  const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
 
   const fetchTasks = useCallback(async () => {
     setLoadingTasks(true);
@@ -48,9 +70,9 @@ const Dashboard = () => {
         description: error.message,
         variant: "destructive",
       });
-      setTasks([]);
+      setAllTasks([]);
     } else {
-      setTasks(data as Task[]);
+      setAllTasks(data as Task[]);
     }
     setLoadingTasks(false);
   }, [toast]);
@@ -90,10 +112,31 @@ const Dashboard = () => {
     }
   }, [userFirstName]);
 
-  const totalTasks = tasks.length;
-  const pendingTasks = tasks.filter((task) => task.status === "pending").length;
-  const inProgressTasks = tasks.filter((task) => task.status === "in-progress").length;
-  const completedTasks = tasks.filter((task) => task.status === "completed").length;
+  // Apply filters to the latest 10 tasks for the dashboard section
+  useEffect(() => {
+    let currentTasks = [...allTasks];
+
+    if (selectedDate) {
+      const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
+      currentTasks = currentTasks.filter(task =>
+        format(new Date(task.created_at), "yyyy-MM-dd") === formattedSelectedDate
+      );
+    }
+    if (selectedPriority !== "all") {
+      currentTasks = currentTasks.filter(task => task.priority === selectedPriority);
+    }
+    if (selectedStatus !== "all") {
+      currentTasks = currentTasks.filter(task => task.status === selectedStatus);
+    }
+
+    setFilteredDashboardTasks(currentTasks.slice(0, 10)); // Always show max 10 filtered tasks
+  }, [allTasks, selectedDate, selectedPriority, selectedStatus]);
+
+
+  const totalTasks = allTasks.length;
+  const pendingTasks = allTasks.filter((task) => task.status === "pending").length;
+  const inProgressTasks = allTasks.filter((task) => task.status === "in-progress").length;
+  const completedTasks = allTasks.filter((task) => task.status === "completed").length;
 
   const isLoading = loadingTasks || loadingProfile;
 
@@ -114,14 +157,74 @@ const Dashboard = () => {
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
           </div>
         ) : (
-          <DashboardStats
-            totalTasks={totalTasks}
-            pendingTasks={pendingTasks}
-            inProgressTasks={inProgressTasks}
-            completedTasks={completedTasks}
-          />
+          <>
+            <DashboardStats
+              totalTasks={totalTasks}
+              pendingTasks={pendingTasks}
+              inProgressTasks={inProgressTasks}
+              completedTasks={completedTasks}
+            />
+
+            <div className="w-full max-w-4xl flex flex-wrap justify-center gap-4 my-8">
+              {/* Calendar Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[200px] justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>Filter by Date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    initialFocus
+                  />
+                  {selectedDate && (
+                    <div className="p-2">
+                      <Button variant="ghost" onClick={() => setSelectedDate(undefined)} className="w-full">Clear Date</Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+
+              {/* Priority Filter */}
+              <Select onValueChange={(value: "all" | "low" | "medium" | "high") => setSelectedPriority(value)} value={selectedPriority}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Status Filter */}
+              <Select onValueChange={(value: "all" | "pending" | "in-progress" | "completed") => setSelectedStatus(value)} value={selectedStatus}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <LatestTasksSection tasks={filteredDashboardTasks} totalTaskCount={totalTasks} />
+          </>
         )}
-        {/* Removed MadeWithDyad from Dashboard */}
       </div>
     </PageTransitionWrapper>
   );

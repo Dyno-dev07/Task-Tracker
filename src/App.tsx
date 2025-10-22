@@ -10,7 +10,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AuthLayout from "./components/AuthLayout";
 import TaskListPage from "./pages/TaskListPage";
-import { AnimatePresence } from "framer-motion"; // Import AnimatePresence
+import AllTasksPage from "./pages/AllTasksPage"; // Import AllTasksPage
+import { AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           {/* Protected routes */}
           <Route element={<AuthLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/tasks/all" element={<AllTasksPage />} /> {/* New route for all tasks */}
             <Route path="/tasks/:status" element={<TaskListPage />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

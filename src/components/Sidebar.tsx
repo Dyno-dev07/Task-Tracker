@@ -17,6 +17,7 @@ interface SidebarProps {
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: Home },
+  { name: "All Tasks", path: "/tasks/all", icon: ListTodo }, // New item for all tasks
   { name: "Pending Tasks", path: "/tasks/pending", icon: Hourglass },
   { name: "In Progress", path: "/tasks/in-progress", icon: PlayCircle },
   { name: "Completed Tasks", path: "/tasks/completed", icon: CheckCircle },
