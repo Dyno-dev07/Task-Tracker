@@ -2,7 +2,7 @@
 
 import React from "react";
 import TaskStatsCard from "./TaskStatsCard";
-import { ListTodo, Hourglass, CheckCircle, XCircle } from "lucide-react";
+import { ListTodo, Hourglass, PlayCircle, CheckCircle } from "lucide-react"; // Changed XCircle to PlayCircle for in-progress
 
 interface DashboardStatsProps {
   totalTasks: number;
@@ -22,22 +22,26 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
       <TaskStatsCard
         title="Total Tasks"
         value={totalTasks}
-        icon={<ListTodo className="h-4 w-4 text-muted-foreground" />}
+        icon={<ListTodo />}
+        iconColor="text-blue-500 dark:text-blue-400"
       />
       <TaskStatsCard
         title="Pending Tasks"
         value={pendingTasks}
-        icon={<Hourglass className="h-4 w-4 text-muted-foreground" />}
+        icon={<Hourglass />}
+        iconColor="text-yellow-500 dark:text-yellow-400"
       />
       <TaskStatsCard
         title="In Progress"
         value={inProgressTasks}
-        icon={<XCircle className="h-4 w-4 text-muted-foreground" />}
+        icon={<PlayCircle />} {/* Changed icon */}
+        iconColor="text-orange-500 dark:text-orange-400"
       />
       <TaskStatsCard
         title="Completed Tasks"
         value={completedTasks}
-        icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
+        icon={<CheckCircle />}
+        iconColor="text-green-500 dark:text-green-400"
       />
     </div>
   );
