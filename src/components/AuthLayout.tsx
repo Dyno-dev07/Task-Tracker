@@ -12,39 +12,58 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import PageTransitionWrapper from "./PageTransitionWrapper";
 import { AnimatePresence } from "framer-motion";
+import SplashScreen from "./SplashScreen"; // Import SplashScreen
 
 const AuthLayout = () => {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
+  const [isLoadingInitialAuthContent, setIsLoadingInitialAuthContent] = useState(true); // Global initial load state
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const location = useLocation();
 
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
+
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setLoading(false);
+    const checkAuthAndInitialData = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+
+      if (currentSession) {
+        // Fetch a minimal piece of data to signify "initial content ready"
+        // This runs only once due to the empty dependency array of the useEffect.
+        const { count, error } = await supabase
+          .from("tasks")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentSession.user.id);
+
+        if (error) {
+          console.error("Error fetching initial task count for splash screen:", error);
+        }
+        setIsLoadingInitialAuthContent(false);
+      } else {
+        setIsLoadingInitialAuthContent(false); // No session, so initial content is not loading, will redirect.
+      }
     };
 
-    getSession();
+    checkAuthAndInitialData();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setLoading(false);
+      if (!session) {
+        setIsLoadingInitialAuthContent(false); // Ensure splash screen is hidden if logged out
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, []); // Run only once on mount
 
   useEffect(() => {
-    if (!loading && !session) {
+    if (!isLoadingInitialAuthContent && !session) {
       navigate("/login");
     }
-  }, [loading, session, navigate]);
+  }, [isLoadingInitialAuthContent, session, navigate]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -69,12 +88,8 @@ const AuthLayout = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-      </div>
-    );
+  if (isLoadingInitialAuthContent) {
+    return <SplashScreen text="Getting your tasks ready" />;
   }
 
   if (!session) {
@@ -99,7 +114,7 @@ const AuthLayout = () => {
           onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
         />
-        <main className="flex-1 p-4 md:p-6 relative"> {/* Added 'relative' here */}
+        <main className="flex-1 p-4 md:p-6 relative">
           <AnimatePresence mode="wait">
             <PageTransitionWrapper key={location.pathname}>
               <Outlet />
