@@ -16,7 +16,8 @@ import SplashScreen from "./SplashScreen";
 
 const AuthLayout = () => {
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoadingInitialAuthContent, setIsLoadingInitialAuthContent] = useState(true);
+  const [isLoadingAuthCheck, setIsLoadingAuthCheck] = useState(true); // For initial session check
+  const [showLoginSplashScreen, setShowLoginSplashScreen] = useState(false); // For post-login splash
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -26,45 +27,40 @@ const AuthLayout = () => {
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
 
   useEffect(() => {
-    const checkAuthAndInitialData = async () => {
-      const [sessionData, minDelay] = await Promise.all([
-        supabase.auth.getSession(),
-        new Promise(resolve => setTimeout(resolve, 2000)) // 2-second minimum delay
-      ]);
-
-      const currentSession = sessionData.data.session;
+    const checkSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
       setSession(currentSession);
 
-      if (currentSession) {
-        const { count, error } = await supabase
-          .from("tasks")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentSession.user.id);
-
-        if (error) {
-          console.error("Error fetching initial task count for splash screen:", error);
-        }
+      // If coming from login/signup and a session exists, show splash screen
+      if (location.state?.fromLogin && currentSession) {
+        setShowLoginSplashScreen(true);
+        const timer = setTimeout(() => {
+          setShowLoginSplashScreen(false);
+          // Clear the state so it doesn't show again on refresh
+          navigate(location.pathname, { replace: true, state: {} });
+        }, 2000); // 2-second splash screen
+        return () => clearTimeout(timer);
       }
-      setIsLoadingInitialAuthContent(false);
+      setIsLoadingAuthCheck(false); // Auth check complete
     };
 
-    checkAuthAndInitialData();
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (!session) {
-        setIsLoadingInitialAuthContent(false);
+        setIsLoadingAuthCheck(false); // Ensure auth check is marked complete if logged out
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, location.state?.fromLogin, location.pathname]);
 
   useEffect(() => {
-    if (!isLoadingInitialAuthContent && !session) {
+    if (!isLoadingAuthCheck && !session && !showLoginSplashScreen) {
       navigate("/login");
     }
-  }, [isLoadingInitialAuthContent, session, navigate]);
+  }, [isLoadingAuthCheck, session, showLoginSplashScreen, navigate]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -89,7 +85,7 @@ const AuthLayout = () => {
     }
   };
 
-  if (isLoadingInitialAuthContent) {
+  if (isLoadingAuthCheck || showLoginSplashScreen) {
     return <SplashScreen text="Getting your tasks ready" />;
   }
 
@@ -115,7 +111,7 @@ const AuthLayout = () => {
           onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
         />
-        <main className="flex-1 p-4 md:p-6 relative">
+        <main className="flex-1 p-4 md:p-6 relative overflow-hidden"> {/* Added overflow-hidden here */}
           <AnimatePresence mode="wait">
             <PageTransitionWrapper key={location.pathname}>
               <Outlet />

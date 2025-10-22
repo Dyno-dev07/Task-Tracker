@@ -17,7 +17,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Import PageTransitionWrapper
+import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -49,7 +49,7 @@ const Login = () => {
         title: "Login Successful!",
         description: "You have been logged in.",
       });
-      navigate("/dashboard"); // Redirect to dashboard after successful login
+      navigate("/dashboard", { state: { fromLogin: true } }); // Pass state here
     } catch (error: any) {
       toast({
         title: "Login Failed",
