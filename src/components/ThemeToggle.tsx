@@ -16,8 +16,19 @@ export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
 
   React.useEffect(() => {
-    console.log("Current active theme:", theme);
-  }, [theme]);
+    console.log("ThemeToggle mounted. Current active theme (from useTheme):", theme);
+    // Also log the class on the html element to verify next-themes is applying it
+    console.log("HTML class on mount:", document.documentElement.className);
+  }, [theme]); // Depend on theme to log changes
+
+  const handleThemeChange = (newTheme: string) => {
+    console.log(`Attempting to set theme to: ${newTheme}`);
+    setTheme(newTheme);
+    // Use a small timeout to allow next-themes to update the DOM, then check
+    setTimeout(() => {
+      console.log(`HTML class after setting ${newTheme}:`, document.documentElement.className);
+    }, 50); // A small delay to ensure DOM update
+  };
 
   return (
     <DropdownMenu>
@@ -29,28 +40,28 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => { setTheme("light"); console.log("Attempting to set theme to light"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("light")}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("dark"); console.log("Attempting to set theme to dark"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("green"); console.log("Attempting to set theme to green"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("green")}>
           Green
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("purple"); console.log("Attempting to set theme to purple"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("purple")}>
           Purple
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("blue"); console.log("Attempting to set theme to blue"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("blue")}>
           Blue
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("pink"); console.log("Attempting to set theme to pink"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("pink")}>
           Pink
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("orange"); console.log("Attempting to set theme to orange"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("orange")}>
           Orange
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("system"); console.log("Attempting to set theme to system"); }}>
+        <DropdownMenuItem onClick={() => handleThemeChange("system")}>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
