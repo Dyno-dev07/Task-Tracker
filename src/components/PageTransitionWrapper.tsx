@@ -10,12 +10,12 @@ interface PageTransitionWrapperProps {
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 20,
+    y: 20, // Starts slightly below for a "bounce up" entry
     scale: 0.98,
   },
   animate: {
     opacity: 1,
-    y: 0,
+    y: 0, // Bounces up to its final position
     scale: 1,
     transition: {
       type: "spring",
@@ -26,7 +26,7 @@ const pageVariants = {
   },
   exit: {
     opacity: 0,
-    y: -20,
+    y: 0, // Fades out in place to prevent scrollbar issues
     scale: 0.98,
     transition: {
       duration: 0.2,
@@ -41,7 +41,10 @@ const PageTransitionWrapper: React.FC<PageTransitionWrapperProps> = ({ children 
       initial="initial"
       animate="animate"
       exit="exit"
-      className="w-full h-full absolute inset-0 overflow-hidden" // Added absolute, inset-0, and overflow-hidden
+      // absolute inset-0 takes the element out of the document flow and positions it
+      // to fill its parent. overflow-hidden ensures any animation movement outside
+      // these bounds is clipped, preventing scrollbars.
+      className="w-full h-full absolute inset-0 overflow-hidden"
     >
       {children}
     </motion.div>
