@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { Home, ListTodo, Hourglass, PlayCircle, CheckCircle, LogOut, Menu, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, ListTodo, Hourglass, PlayCircle, CheckCircle, LogOut, Menu, Settings } from "lucide-react"; // Import Settings icon
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
@@ -21,6 +21,7 @@ const navItems = [
   { name: "Pending Tasks", path: "/tasks/pending", icon: Hourglass },
   { name: "In Progress", path: "/tasks/in-progress", icon: PlayCircle },
   { name: "Completed Tasks", path: "/tasks/completed", icon: CheckCircle },
+  { name: "Settings", path: "/settings", icon: Settings }, // New Settings item
 ];
 
 const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void; isDesktopSidebarOpen: boolean }> = ({ onLogout, closeSidebar, isDesktopSidebarOpen }) => {

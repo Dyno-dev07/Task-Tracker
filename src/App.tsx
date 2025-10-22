@@ -11,7 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import AuthLayout from "./components/AuthLayout";
 import TaskListPage from "./pages/TaskListPage";
 import AllTasksPage from "./pages/AllTasksPage";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Import PageTransitionWrapper
+import SettingsPage from "./pages/SettingsPage"; // Import SettingsPage
+import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import { AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
@@ -32,7 +33,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AnimatePresence mode="wait"> {/* AnimatePresence now wraps all routes */}
+        <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<AnimatedRoute><Index /></AnimatedRoute>} />
             <Route path="/signup" element={<AnimatedRoute><SignUp /></AnimatedRoute>} />
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/dashboard" element={<AnimatedRoute><Dashboard /></AnimatedRoute>} />
               <Route path="/tasks/all" element={<AnimatedRoute><AllTasksPage /></AnimatedRoute>} />
               <Route path="/tasks/:status" element={<AnimatedRoute><TaskListPage /></AnimatedRoute>} />
+              <Route path="/settings" element={<AnimatedRoute><SettingsPage /></AnimatedRoute>} /> {/* New Settings Route */}
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<AnimatedRoute><NotFound /></AnimatedRoute>} />
