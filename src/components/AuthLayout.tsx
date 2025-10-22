@@ -10,8 +10,6 @@ import Header from "./Header";
 import CreateTaskDialog from "./CreateTaskDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
-import PageTransitionWrapper from "./PageTransitionWrapper";
-import { AnimatePresence } from "framer-motion";
 import SplashScreen from "./SplashScreen";
 
 const AuthLayout = () => {
@@ -111,12 +109,9 @@ const AuthLayout = () => {
           onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
         />
-        <main className="flex-1 p-4 md:p-6 relative overflow-hidden"> {/* Added overflow-hidden here */}
-          <AnimatePresence mode="wait">
-            <PageTransitionWrapper key={location.pathname}>
-              <Outlet />
-            </PageTransitionWrapper>
-          </AnimatePresence>
+        <main className="flex-1 p-4 md:p-6 relative overflow-hidden">
+          {/* Outlet is now wrapped by PageTransitionWrapper in App.tsx */}
+          <Outlet />
         </main>
         {isMobile && (
           <div className="fixed bottom-4 right-4 z-40">

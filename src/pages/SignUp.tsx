@@ -24,7 +24,6 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Import PageTransitionWrapper
 
 const formSchema = z.object({
   firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
@@ -88,91 +87,89 @@ const SignUp = () => {
   };
 
   return (
-    <PageTransitionWrapper>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
-          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
-            Create Your Account
-          </h2>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
+        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+          Create Your Account
+        </h2>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="john.doe@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="department"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Department</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Input placeholder="John" {...field} />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your department" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="john.doe@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="department"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Department</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your department" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Sales">Sales</SelectItem>
-                        <SelectItem value="Marketing">Marketing</SelectItem>
-                        <SelectItem value="PMS">PMS</SelectItem>
-                        <SelectItem value="Installation">Installation</SelectItem>
-                        <SelectItem value="Aftersales">Aftersales</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full">
-                Sign Up
-              </Button>
-            </form>
-          </Form>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Log In
-            </Link>
-          </p>
-        </div>
+                    <SelectContent>
+                      <SelectItem value="Sales">Sales</SelectItem>
+                      <SelectItem value="Marketing">Marketing</SelectItem>
+                      <SelectItem value="PMS">PMS</SelectItem>
+                      <SelectItem value="Installation">Installation</SelectItem>
+                      <SelectItem value="Aftersales">Aftersales</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full">
+              Sign Up
+            </Button>
+          </form>
+        </Form>
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Log In
+          </Link>
+        </p>
       </div>
-    </PageTransitionWrapper>
+    </div>
   );
 };
 
