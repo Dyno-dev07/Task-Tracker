@@ -38,7 +38,7 @@ interface Task {
 interface UserProfile {
   id: string;
   first_name: string;
-  email: string;
+  // Removed 'email' as it's not directly in the profiles table
 }
 
 const containerVariants = {
@@ -64,13 +64,13 @@ const UserTasksPage: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all users
+  // Fetch all users (profiles)
   const { data: users = [], isLoading: loadingUsers } = useQuery<UserProfile[]>({
     queryKey: ['allUsers'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, first_name, email");
+        .select("id, first_name"); // Only selecting existing columns
       if (error) {
         toast({
           title: "Error fetching users",
@@ -152,7 +152,7 @@ const UserTasksPage: React.FC = () => {
                 ) : (
                   users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
-                      {user.first_name} ({user.email})
+                      {user.first_name} {/* Displaying only first name */}
                     </SelectItem>
                   ))
                 )}
