@@ -16,8 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import jsPDF from "jspdf"; // Default import for jsPDF
-import autoTable from "jspdf-autotable"; // Direct import of autoTable
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import {
   Accordion,
@@ -178,7 +178,8 @@ const TaskSummaryPage: React.FC = () => {
       doc.text(`Department: ${selectedReportDepartment === "all" ? "All" : selectedReportDepartment}`, 14, yPos);
       yPos += 15;
 
-      const tableColumn = ["User", "Department", "Title", "Status", "Priority", "Due Date"];
+      // Updated table columns to include Description and Created At
+      const tableColumn = ["User", "Department", "Title", "Description", "Status", "Priority", "Due Date", "Created At"];
       const tableRows: any[] = [];
 
       tasks?.forEach((task: TaskWithProfile) => {
@@ -186,9 +187,11 @@ const TaskSummaryPage: React.FC = () => {
           task.first_name || "N/A",
           task.department || "N/A",
           task.title,
+          task.description || "N/A", // Added description
           task.status,
           task.priority,
           task.due_date ? format(new Date(task.due_date), "PPP") : "N/A",
+          format(new Date(task.created_at), "PPP"), // Added created_at
         ];
         tableRows.push(taskData);
       });
