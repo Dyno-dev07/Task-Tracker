@@ -20,7 +20,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useQuery } from "@tanstack/react-query"; // Import useQuery
+import { useQuery } from "@tanstack/react-query";
+import DataDeletionReminder from "@/components/DataDeletionReminder"; // Import the new component
 
 // Define a type for your task data
 interface Task {
@@ -139,6 +140,9 @@ const Dashboard = () => {
             Check if you're slayin' your tasks or just existing in the office
           </p>
         </div>
+
+        {/* Data Deletion Reminder */}
+        <DataDeletionReminder />
 
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
