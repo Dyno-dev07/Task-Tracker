@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { Home, ListTodo, Hourglass, PlayCircle, CheckCircle, LogOut, Menu, Settings, Users, FileText, BarChart2 } from "lucide-react"; // Import new icons
+import { Home, ListTodo, Hourglass, PlayCircle, CheckCircle, LogOut, Menu, Settings, Users, FileText, BarChart2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
@@ -13,14 +13,14 @@ interface SidebarProps {
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (open: boolean) => void;
   isDesktopSidebarOpen: boolean;
-  userRole: "Admin" | "Regular" | null; // Add userRole prop
+  userRole: "Admin" | "Regular" | null;
 }
 
 interface NavItem {
   name: string;
   path: string;
   icon: React.ElementType;
-  adminOnly?: boolean; // New property
+  adminOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -33,7 +33,6 @@ const navItems: NavItem[] = [
   // Admin-specific items
   { name: "User Tasks", path: "/admin/users-tasks", icon: Users, adminOnly: true },
   { name: "Task Summary", path: "/admin/task-summary", icon: BarChart2, adminOnly: true },
-  { name: "Reports", path: "/admin/reports", icon: FileText, adminOnly: true },
 ];
 
 const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void; isDesktopSidebarOpen: boolean; userRole: "Admin" | "Regular" | null }> = ({ onLogout, closeSidebar, isDesktopSidebarOpen, userRole }) => {
@@ -43,7 +42,6 @@ const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void
     <div className="flex h-full flex-col justify-between p-4">
       <nav className="space-y-1">
         {navItems.map((item) => {
-          // Conditionally render admin items
           if (item.adminOnly && userRole !== "Admin") {
             return null;
           }

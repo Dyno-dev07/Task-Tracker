@@ -14,9 +14,8 @@ import AllTasksPage from "./pages/AllTasksPage";
 import SettingsPage from "./pages/SettingsPage";
 import UserTasksPage from "./pages/UserTasksPage";
 import TaskSummaryPage from "./pages/TaskSummaryPage";
-import ReportsPage from "./pages/ReportsPage";
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
-import AdminRouteGuard from "./components/AdminRouteGuard"; // Import AdminRouteGuard
+import AdminRouteGuard from "./components/AdminRouteGuard";
 import { AnimatePresence } from "framer-motion";
 import React from "react";
 
@@ -53,7 +52,6 @@ const App = () => (
               <Route element={<AdminRouteGuard />}>
                 <Route path="/admin/users-tasks" element={<AnimatedRoute><UserTasksPage /></AnimatedRoute>} />
                 <Route path="/admin/task-summary" element={<AnimatedRoute><TaskSummaryPage /></AnimatedRoute>} />
-                <Route path="/admin/reports" element={<AnimatedRoute><ReportsPage /></AnimatedRoute>} />
               </Route>
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
