@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, FileText, Download } from "lucide-react";
+import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, FileText, Download, Briefcase } from "lucide-react"; // Added Briefcase icon
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -129,17 +129,14 @@ const TaskSummaryPage: React.FC = () => {
     },
   });
 
-  // Group tasks by department
-  const tasksGroupedByDepartment = React.useMemo(() => {
-    const grouped: { [key: string]: TaskWithProfile[] } = {};
+  // Calculate task counts grouped by department
+  const departmentTaskCounts = React.useMemo(() => {
+    const counts: { [key: string]: number } = {};
     allTasksWithProfiles.forEach(task => {
       const departmentName = task.department || "Unassigned";
-      if (!grouped[departmentName]) {
-        grouped[departmentName] = [];
-      }
-      grouped[departmentName].push(task);
+      counts[departmentName] = (counts[departmentName] || 0) + 1;
     });
-    return grouped;
+    return counts;
   }, [allTasksWithProfiles]);
 
   const generateReport = useCallback(async () => {
@@ -215,19 +212,6 @@ const TaskSummaryPage: React.FC = () => {
     }
   }, [reportPeriod, selectedReportDepartment, toast]);
 
-  const getPriorityBadgeVariant = (priority: "low" | "medium" | "high") => {
-    switch (priority) {
-      case "low":
-        return "secondary";
-      case "medium":
-        return "default";
-      case "high":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
   const handleTaskChange = () => {
     queryClient.invalidateQueries({ queryKey: ['allTasksWithProfiles'] });
     queryClient.invalidateQueries({ queryKey: ['allTasksSummaryCounts'] });
@@ -276,7 +260,30 @@ const TaskSummaryPage: React.FC = () => {
             </div>
           )}
 
-          <Card className="p-6 space-y-4">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-12 mb-6">Tasks by Department Overview</h2>
+          {loadingAllTasks ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            </div>
+          ) : Object.keys(departmentTaskCounts).length === 0 ? (
+            <p className="text-lg text-gray-600 dark:text-gray-400">No tasks found across all departments.</p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(departmentTaskCounts).map(([departmentName, count]) => (
+                <Card key={departmentName} className="flex flex-col justify-between h-full">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{departmentName}</CardTitle>
+                    <Briefcase className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{count} Tasks</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <Card className="p-6 space-y-4 mt-12"> {/* Moved this card down */}
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-3">
                 <FileText className="h-6 w-6 text-primary" />
@@ -333,58 +340,6 @@ const TaskSummaryPage: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-12 mb-6">Tasks by Department</h2>
-          {loadingAllTasks ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            </div>
-          ) : Object.keys(tasksGroupedByDepartment).length === 0 ? (
-            <p className="text-lg text-gray-600 dark:text-gray-400">No tasks found across all departments.</p>
-          ) : (
-            <Accordion type="multiple" className="w-full">
-              {Object.entries(tasksGroupedByDepartment).map(([departmentName, tasksInDepartment]) => (
-                <AccordionItem key={departmentName} value={departmentName}>
-                  <AccordionTrigger className="text-xl font-semibold">
-                    {departmentName} ({tasksInDepartment.length} tasks)
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="grid gap-4 py-4 md:grid-cols-2 lg:grid-cols-3">
-                      {tasksInDepartment.map(task => (
-                        <Card key={task.id} className="flex flex-col justify-between h-full">
-                          <CardHeader>
-                            <CardTitle>{task.title}</CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-2">
-                              <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
-                              <Badge variant="outline">{task.status}</Badge>
-                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
-                                {task.first_name || "Unknown User"}
-                              </span>
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
-                            {task.due_date && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Due: {format(new Date(task.due_date), "PPP")}
-                              </p>
-                            )}
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              Created: {format(new Date(task.created_at), "PPP")}
-                            </p>
-                            <div className="flex justify-end gap-1 mt-4">
-                              <EditTaskDialog task={task} onTaskUpdated={handleTaskChange} />
-                              <DeleteTaskDialog taskId={task.id} onTaskDeleted={handleTaskChange} />
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
         </div>
       </div>
     </PageTransitionWrapper>
