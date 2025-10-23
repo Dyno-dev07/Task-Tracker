@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Edit, Megaphone } from "lucide-react";
+import { Loader2, Megaphone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -67,8 +67,8 @@ const AdminAnnouncementManager: React.FC = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      content: announcement?.content || "",
-      is_visible: announcement?.is_visible || false,
+      content: announcement?.content || "", // Ensure fallback for content
+      is_visible: announcement?.is_visible ?? false, // Ensure fallback for boolean
     },
   });
 
@@ -77,7 +77,7 @@ const AdminAnnouncementManager: React.FC = () => {
     if (open) {
       form.reset({
         content: announcement?.content || "",
-        is_visible: announcement?.is_visible || false,
+        is_visible: announcement?.is_visible ?? false,
       });
     }
   }, [open, announcement, form]);
@@ -157,15 +157,63 @@ const AdminAnnouncementManager: React.FC = () => {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        {/* Temporarily simplified content for debugging */}
-        <div>
-          <DialogHeader>
-            <DialogTitle>Test Title</DialogTitle>
-            <DialogDescription>Test Description</DialogDescription>
-          </DialogHeader>
-          <p className="py-4">This is a test. If you see this, the dialog opens correctly.</p>
-          <Button onClick={() => setOpen(false)}>Close</Button>
-        </div>
+        <DialogHeader>
+          <DialogTitle>{announcement ? "Edit Global Announcement" : "Create Global Announcement"}</DialogTitle>
+          <DialogDescription>
+            {announcement ? "Update the existing announcement or toggle its visibility." : "Create a new global announcement for all users."}
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Announcement Content</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter your announcement here..."
+                      className="resize-y min-h-[100px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="is_visible"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Visible to Users</FormLabel>
+                    <DialogDescription>
+                      Toggle to make the announcement visible or hidden from all users.
+                    </DialogDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Announcement"
+              )}
+            </Button>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
