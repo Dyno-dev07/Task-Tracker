@@ -74,16 +74,11 @@ const AdminAnnouncementManager: React.FC = () => {
 
   // Reset form values when the dialog opens or announcement data changes
   useEffect(() => {
-    if (open && announcement) {
+    if (open) {
       form.reset({
-        content: announcement.content,
-        is_visible: announcement.is_visible,
+        content: announcement?.content || "",
+        is_visible: announcement?.is_visible || false,
       });
-    } else if (open && !announcement) {
-        form.reset({
-            content: "",
-            is_visible: false,
-        });
     }
   }, [open, announcement, form]);
 
@@ -162,59 +157,15 @@ const AdminAnnouncementManager: React.FC = () => {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{announcement ? "Edit Global Announcement" : "Create Global Announcement"}</DialogTitle>
-          <DialogDescription>
-            {announcement ? "Update the message and visibility of the global announcement." : "Create a new global announcement for all users."}
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Announcement Content</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Enter your announcement here..." {...field} rows={5} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="is_visible"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Visible to Users</FormLabel>
-                    <FormDescription>
-                      Toggle to show or hide this announcement on the dashboard.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
-          </form>
-        </Form>
+        {/* Temporarily simplified content for debugging */}
+        <div>
+          <DialogHeader>
+            <DialogTitle>Test Title</DialogTitle>
+            <DialogDescription>Test Description</DialogDescription>
+          </DialogHeader>
+          <p className="py-4">This is a test. If you see this, the dialog opens correctly.</p>
+          <Button onClick={() => setOpen(false)}>Close</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
