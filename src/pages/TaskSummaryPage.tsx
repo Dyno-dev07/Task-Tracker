@@ -16,8 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { jsPDF } from "jspdf"; // Changed to named import for autotable compatibility
-import "jspdf-autotable";
+import jsPDF from "jspdf"; // Default import for jsPDF
+import autoTable from "jspdf-autotable"; // Direct import of autoTable
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import {
   Accordion,
@@ -193,7 +193,11 @@ const TaskSummaryPage: React.FC = () => {
         tableRows.push(taskData);
       });
 
-      (doc as any).autoTable(tableColumn, tableRows, { startY: yPos });
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: yPos,
+      });
 
       doc.save(`Task_Report_${format(now, "yyyyMMdd_HHmmss")}.pdf`);
 
