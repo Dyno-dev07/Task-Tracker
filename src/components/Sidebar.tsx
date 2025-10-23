@@ -29,10 +29,10 @@ const navItems: NavItem[] = [
   { name: "Pending Tasks", path: "/tasks/pending", icon: Hourglass },
   { name: "In Progress", path: "/tasks/in-progress", icon: PlayCircle },
   { name: "Completed Tasks", path: "/tasks/completed", icon: CheckCircle },
-  { name: "Settings", path: "/settings", icon: Settings },
   // Admin-specific items
   { name: "User Tasks", path: "/admin/users-tasks", icon: Users, adminOnly: true },
   { name: "Task Summary", path: "/admin/task-summary", icon: BarChart2, adminOnly: true },
+  { name: "Settings", path: "/settings", icon: Settings }, // Moved Settings to the end
 ];
 
 const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void; isDesktopSidebarOpen: boolean; userRole: "Admin" | "Regular" | null }> = ({ onLogout, closeSidebar, isDesktopSidebarOpen, userRole }) => {
