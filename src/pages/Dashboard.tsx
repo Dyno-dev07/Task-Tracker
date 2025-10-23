@@ -46,14 +46,29 @@ const Dashboard = () => {
   const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
 
-  // Fetch tasks using react-query
+  // Fetch tasks using react-query (RLS will ensure only current user's tasks are fetched)
   const { data: allTasks = [], isLoading: loadingTasks, refetch: refetchTasks } = useQuery<Task[]>({
     queryKey: ['tasks'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tasks")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // Apply filters directly to the query for the current user's tasks
+      if (selectedDate) {
+        const formattedSelectedDate = format(selectedDate, "yyyy-MM-ddT00:00:00.000Z");
+        const endOfDay = format(selectedDate, "yyyy-MM-ddT23:59:59.999Z");
+        query = query.gte("created_at", formattedSelectedDate).lte("created_at", endOfDay);
+      }
+      if (selectedPriority !== "all") {
+        query = query.eq("priority", selectedPriority);
+      }
+      if (selectedStatus !== "all") {
+        query = query.eq("status", selectedStatus);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         toast({
@@ -100,25 +115,10 @@ const Dashboard = () => {
     }
   }, [userFirstName]);
 
-  // Apply filters to the latest 10 tasks for the dashboard section
+  // The filteredDashboardTasks will now be based on the `allTasks` which are already filtered by RLS and component state
   const filteredDashboardTasks = React.useMemo(() => {
-    let currentTasks = [...allTasks];
-
-    if (selectedDate) {
-      const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
-      currentTasks = currentTasks.filter(task =>
-        task.created_at && format(new Date(task.created_at), "yyyy-MM-dd") === formattedSelectedDate
-      );
-    }
-    if (selectedPriority !== "all") {
-      currentTasks = currentTasks.filter(task => task.priority === selectedPriority);
-    }
-    if (selectedStatus !== "all") {
-      currentTasks = currentTasks.filter(task => task.status === selectedStatus);
-    }
-
-    return currentTasks.slice(0, 10); // Always show max 10 filtered tasks
-  }, [allTasks, selectedDate, selectedPriority, selectedStatus]);
+    return allTasks.slice(0, 10); // Always show max 10 filtered tasks
+  }, [allTasks]);
 
 
   const totalTasks = allTasks.length;

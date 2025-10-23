@@ -19,7 +19,8 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 
-interface Task {
+// Define the return type for the RPC function
+interface TaskWithProfile {
   id: string;
   title: string;
   description: string | null;
@@ -28,6 +29,8 @@ interface Task {
   due_date: string | null;
   created_at: string;
   user_id: string;
+  first_name: string;
+  department: string;
 }
 
 interface UserProfile {
@@ -78,19 +81,14 @@ const ReportsPage: React.FC = () => {
         endDate = endOfMonth(now);
       }
 
-      let query = supabase
-        .from("tasks")
-        .select("*, profiles(first_name, department)") // Join with profiles to get user info
-        .gte("created_at", startDate.toISOString())
-        .lte("created_at", endDate.toISOString())
-        .order("created_at", { ascending: false });
-
-      if (selectedDepartment !== "all") {
-        // Filter by department by joining with profiles table
-        query = query.in('user_id', users.filter(u => u.department === selectedDepartment).map(u => u.id));
-      }
-
-      const { data: tasks, error } = await query;
+      const { data: tasks, error } = await supabase.rpc('get_all_tasks_with_profiles', {
+        start_date_iso: startDate.toISOString(),
+        end_date_iso: endDate.toISOString(),
+        department_name: selectedDepartment === "all" ? null : selectedDepartment,
+        user_id_filter: null, // Not filtering by specific user ID here
+        priority_filter: null, // Not filtering by priority here
+        status_filter: null, // Not filtering by status here
+      });
 
       if (error) throw error;
 
@@ -110,11 +108,10 @@ const ReportsPage: React.FC = () => {
       const tableColumn = ["User", "Department", "Title", "Status", "Priority", "Due Date"];
       const tableRows: any[] = [];
 
-      tasks?.forEach((task: any) => {
-        const userProfile = task.profiles as UserProfile; // Type assertion for joined data
+      tasks?.forEach((task: TaskWithProfile) => {
         const taskData = [
-          userProfile?.first_name || "N/A",
-          userProfile?.department || "N/A",
+          task.first_name || "N/A",
+          task.department || "N/A",
           task.title,
           task.status,
           task.priority,

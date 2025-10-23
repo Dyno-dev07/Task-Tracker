@@ -38,7 +38,6 @@ interface Task {
 interface UserProfile {
   id: string;
   first_name: string;
-  // Removed 'email' as it's not directly in the profiles table
 }
 
 const containerVariants = {
@@ -70,7 +69,7 @@ const UserTasksPage: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, first_name"); // Only selecting existing columns
+        .select("id, first_name");
       if (error) {
         toast({
           title: "Error fetching users",
@@ -83,26 +82,15 @@ const UserTasksPage: React.FC = () => {
     },
   });
 
-  // Fetch tasks based on filters and selected user
+  // Fetch tasks based on filters and selected user using the RPC function
   const fetchTasks = useCallback(async () => {
-    let query = supabase.from("tasks").select("*").order("created_at", { ascending: false });
-
-    if (selectedUserId !== "all") {
-      query = query.eq("user_id", selectedUserId);
-    }
-    if (selectedDate) {
-      const startOfDay = format(selectedDate, "yyyy-MM-ddT00:00:00.000Z");
-      const endOfDay = format(selectedDate, "yyyy-MM-ddT23:59:59.999Z");
-      query = query.gte("created_at", startOfDay).lte("created_at", endOfDay);
-    }
-    if (selectedPriority !== "all") {
-      query = query.eq("priority", selectedPriority);
-    }
-    if (selectedStatus !== "all") {
-      query = query.eq("status", selectedStatus);
-    }
-
-    const { data, error } = await query;
+    const { data, error } = await supabase.rpc('get_all_tasks_with_profiles', {
+      user_id_filter: selectedUserId === "all" ? null : selectedUserId,
+      start_date_iso: selectedDate ? format(selectedDate, "yyyy-MM-ddT00:00:00.000Z") : null,
+      end_date_iso: selectedDate ? format(selectedDate, "yyyy-MM-ddT23:59:59.999Z") : null,
+      priority_filter: selectedPriority === "all" ? null : selectedPriority,
+      status_filter: selectedStatus === "all" ? null : selectedStatus,
+    });
 
     if (error) {
       toast({
@@ -152,7 +140,7 @@ const UserTasksPage: React.FC = () => {
                 ) : (
                   users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
-                      {user.first_name} {/* Displaying only first name */}
+                      {user.first_name}
                     </SelectItem>
                   ))
                 )}
@@ -236,6 +224,10 @@ const UserTasksPage: React.FC = () => {
                       <CardDescription className="flex items-center gap-2 mt-2">
                         <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                         <Badge variant="outline">{task.status}</Badge>
+                        {/* Display user's first name for admin view */}
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                          {users.find(u => u.id === task.user_id)?.first_name || "Unknown User"}
+                        </span>
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
