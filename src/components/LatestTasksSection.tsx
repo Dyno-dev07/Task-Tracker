@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,9 @@ import { format } from "date-fns";
 import { motion } from "framer-motion"; // Import motion
 import EditTaskDialog from "./EditTaskDialog"; // Import EditTaskDialog
 import DeleteTaskDialog from "./DeleteTaskDialog"; // Import DeleteTaskDialog
+import { CheckCircle, PlayCircle, Loader2 } from "lucide-react"; // Import new icons
+import { supabase } from "@/lib/supabase"; // Import supabase
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 interface Task {
   id: string;
@@ -43,6 +46,35 @@ const itemVariants = {
 };
 
 const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTaskCount, onTaskChange }) => {
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null); // To track which task is being updated
+  const { toast } = useToast();
+
+  const handleUpdateStatus = async (taskId: string, newStatus: "in-progress" | "completed") => {
+    setIsUpdatingStatus(taskId);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: newStatus })
+        .eq("id", taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Task Status Updated!",
+        description: `Task moved to ${newStatus}.`,
+      });
+      onTaskChange(); // Refresh tasks
+    } catch (error: any) {
+      toast({
+        title: "Failed to update task status",
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingStatus(null);
+    }
+  };
+
   const getPriorityBadgeVariant = (priority: "low" | "medium" | "high") => {
     switch (priority) {
       case "low":
@@ -88,7 +120,37 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Created: {format(new Date(task.created_at), "PPP")}
                   </p>
-                  <div className="flex justify-end gap-1 mt-4"> {/* Moved action buttons here */}
+                  <div className="flex justify-end gap-1 mt-4">
+                    {task.status === "in-progress" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUpdateStatus(task.id, "completed")}
+                        disabled={isUpdatingStatus === task.id}
+                      >
+                        {isUpdatingStatus === task.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                        )}
+                        Complete
+                      </Button>
+                    )}
+                    {task.status === "pending" && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleUpdateStatus(task.id, "in-progress")}
+                        disabled={isUpdatingStatus === task.id}
+                      >
+                        {isUpdatingStatus === task.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <PlayCircle className="mr-2 h-4 w-4" />
+                        )}
+                        In Progress
+                      </Button>
+                    )}
                     <EditTaskDialog task={task} onTaskUpdated={onTaskChange} />
                     <DeleteTaskDialog taskId={task.id} onTaskDeleted={onTaskChange} />
                   </div>

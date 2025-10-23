@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
+import { Loader2, ArrowLeft, CalendarIcon, CheckCircle, PlayCircle } from "lucide-react"; // Import CheckCircle and PlayCircle
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +47,7 @@ const TaskListPage: React.FC = () => {
   const { status } = useParams<{ status: string }>();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null); // To track which task is being updated
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined); // New state for date filter
 
@@ -82,6 +83,32 @@ const TaskListPage: React.FC = () => {
   useEffect(() => {
     fetchTasksByStatus();
   }, [fetchTasksByStatus]);
+
+  const handleUpdateStatus = async (taskId: string, newStatus: "in-progress" | "completed") => {
+    setIsUpdatingStatus(taskId);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: newStatus })
+        .eq("id", taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Task Status Updated!",
+        description: `Task moved to ${newStatus}.`,
+      });
+      fetchTasksByStatus(); // Refresh tasks
+    } catch (error: any) {
+      toast({
+        title: "Failed to update task status",
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingStatus(null);
+    }
+  };
 
   const getStatusTitle = (statusParam: string | undefined) => {
     switch (statusParam) {
@@ -183,7 +210,37 @@ const TaskListPage: React.FC = () => {
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Created: {format(new Date(task.created_at), "PPP")}
                       </p>
-                      <div className="flex justify-end gap-1 mt-4"> {/* Moved action buttons here */}
+                      <div className="flex justify-end gap-1 mt-4">
+                        {task.status === "in-progress" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(task.id, "completed")}
+                            disabled={isUpdatingStatus === task.id}
+                          >
+                            {isUpdatingStatus === task.id ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                            )}
+                            Complete
+                          </Button>
+                        )}
+                        {task.status === "pending" && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(task.id, "in-progress")}
+                            disabled={isUpdatingStatus === task.id}
+                          >
+                            {isUpdatingStatus === task.id ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <PlayCircle className="mr-2 h-4 w-4" />
+                            )}
+                            In Progress
+                          </Button>
+                        )}
                         <EditTaskDialog task={task} onTaskUpdated={fetchTasksByStatus} />
                         <DeleteTaskDialog taskId={task.id} onTaskDeleted={fetchTasksByStatus} />
                       </div>
