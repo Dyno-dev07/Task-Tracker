@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom"; // Import useOutletContext
 import { useToast } from "@/hooks/use-toast";
 import DashboardStats from "@/components/DashboardStats";
 import { Loader2, CalendarIcon } from "lucide-react";
@@ -21,7 +21,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
-import DataDeletionReminder from "@/components/DataDeletionReminder"; // Import the new component
+import GlobalAnnouncementDisplay from "@/components/GlobalAnnouncementDisplay"; // Import the renamed component
+import AdminAnnouncementManager from "@/components/AdminAnnouncementManager"; // Import the new admin component
 
 // Define a type for your task data
 interface Task {
@@ -35,12 +36,17 @@ interface Task {
   created_at: string;
 }
 
+interface AuthLayoutContext {
+  userRole: "Admin" | "Regular" | null;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [greeting, setGreeting] = useState<string>("");
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const { userRole } = useOutletContext<AuthLayoutContext>(); // Get userRole from context
 
   // Filter states for dashboard tasks
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -141,8 +147,15 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* Data Deletion Reminder */}
-        <DataDeletionReminder />
+        {/* Global Announcement Display */}
+        <GlobalAnnouncementDisplay />
+
+        {/* Admin Announcement Manager (only for admins) */}
+        {userRole === "Admin" && (
+          <div className="w-full max-w-4xl mx-auto mb-8 flex justify-center">
+            <AdminAnnouncementManager />
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center h-32">

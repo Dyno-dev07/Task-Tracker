@@ -136,7 +136,7 @@ const AuthLayout = () => {
           userRole={userRole} // Pass userRole
         />
         <main className="flex-1 p-4 md:p-6 relative overflow-y-auto">
-          <Outlet />
+          <Outlet context={{ userRole }} /> {/* Pass userRole via context */}
         </main>
         {isMobile && (
           <div className="fixed bottom-4 right-4 z-40">
