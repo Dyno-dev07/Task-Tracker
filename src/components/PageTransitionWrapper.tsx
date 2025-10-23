@@ -42,9 +42,8 @@ const PageTransitionWrapper: React.FC<PageTransitionWrapperProps> = ({ children 
       animate="animate"
       exit="exit"
       // absolute inset-0 takes the element out of the document flow and positions it
-      // to fill its parent. overflow-hidden ensures any animation movement outside
-      // these bounds is clipped, preventing scrollbars.
-      className="w-full h-full absolute inset-0 overflow-hidden"
+      // to fill its parent. overflow-y-auto ensures vertical scrolling when content overflows.
+      className="w-full h-full absolute inset-0 overflow-y-auto"
     >
       {children}
     </motion.div>

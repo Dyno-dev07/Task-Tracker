@@ -109,7 +109,7 @@ const AuthLayout = () => {
           onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
         />
-        <main className="flex-1 p-4 md:p-6 relative overflow-hidden">
+        <main className="flex-1 p-4 md:p-6 relative overflow-y-auto">
           {/* Outlet is now wrapped by PageTransitionWrapper in App.tsx */}
           <Outlet />
         </main>
