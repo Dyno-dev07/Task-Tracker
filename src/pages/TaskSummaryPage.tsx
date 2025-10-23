@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf"; // Changed to named import for autotable compatibility
 import "jspdf-autotable";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import {
