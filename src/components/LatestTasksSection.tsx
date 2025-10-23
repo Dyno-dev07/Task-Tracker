@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { motion } from "framer-motion"; // Import motion
-import EditTaskDialog from "./EditTaskDialog"; // Import EditTaskDialog
-import DeleteTaskDialog from "./DeleteTaskDialog"; // Import DeleteTaskDialog
-import { CheckCircle, PlayCircle, Loader2 } from "lucide-react"; // Import new icons
-import { supabase } from "@/lib/supabase"; // Import supabase
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { motion } from "framer-motion";
+import EditTaskDialog from "./EditTaskDialog";
+import DeleteTaskDialog from "./DeleteTaskDialog";
+import { CheckCircle, PlayCircle, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
 
 interface Task {
   id: string;
@@ -35,7 +36,7 @@ const containerVariants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1, // Stagger the animation of children by 0.1 seconds
+      staggerChildren: 0.1,
     },
   },
 };
@@ -46,8 +47,9 @@ const itemVariants = {
 };
 
 const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTaskCount, onTaskChange }) => {
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null); // To track which task is being updated
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Initialize useQueryClient
 
   const handleUpdateStatus = async (taskId: string, newStatus: "in-progress" | "completed") => {
     setIsUpdatingStatus(taskId);
@@ -63,7 +65,7 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
         title: "Task Status Updated!",
         description: `Task moved to ${newStatus}.`,
       });
-      onTaskChange(); // Refresh tasks
+      queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate tasks query to trigger re-fetch
     } catch (error: any) {
       toast({
         title: "Failed to update task status",
@@ -89,7 +91,7 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
   };
 
   return (
-    <div className="w-full max-w-6xl space-y-6"> {/* Adjusted max-w to 6xl for better spacing */}
+    <div className="w-full max-w-6xl space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">Latest Tasks</h2>
       {tasks.length === 0 ? (
         <p className="text-lg text-gray-600 dark:text-gray-400 text-center">No tasks found with the current filters.</p>

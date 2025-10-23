@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea"; // Import Textarea
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -33,10 +33,11 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, Plus } from "lucide-react"; // Import Plus icon
+import { CalendarIcon, Loader2, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Title is required." }).max(100, { message: "Title must not exceed 100 characters." }),
@@ -51,13 +52,14 @@ const formSchema = z.object({
 });
 
 interface CreateTaskDialogProps {
-  onTaskCreated: () => void;
+  // onTaskCreated: () => void; // No longer needed, react-query will handle refresh
 }
 
-const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) => {
+const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onTaskCreated from props
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Initialize useQueryClient
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,7 +98,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = ({ onTaskCreated }) =>
       });
       form.reset();
       setOpen(false);
-      onTaskCreated(); // Notify parent to refresh tasks
+      queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate tasks query to trigger re-fetch
     } catch (error: any) {
       toast({
         title: "Failed to create task",

@@ -20,6 +20,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query"; // Import useQuery
 
 // Define a type for your task data
 interface Task {
@@ -36,9 +37,6 @@ interface Task {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [allTasks, setAllTasks] = useState<Task[]>([]); // Store all tasks for stats
-  const [filteredDashboardTasks, setFilteredDashboardTasks] = useState<Task[]>([]); // Tasks for the dashboard section
-  const [loadingTasks, setLoadingTasks] = useState(true);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [greeting, setGreeting] = useState<string>("");
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -48,25 +46,26 @@ const Dashboard = () => {
   const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
 
-  const fetchTasks = useCallback(async () => {
-    setLoadingTasks(true);
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .order("created_at", { ascending: false });
+  // Fetch tasks using react-query
+  const { data: allTasks = [], isLoading: loadingTasks, refetch: refetchTasks } = useQuery<Task[]>({
+    queryKey: ['tasks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      toast({
-        title: "Error fetching tasks",
-        description: error.message,
-        variant: "destructive",
-      });
-      setAllTasks([]);
-    } else {
-      setAllTasks(data as Task[]);
-    }
-    setLoadingTasks(false);
-  }, [toast]);
+      if (error) {
+        toast({
+          title: "Error fetching tasks",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error; // Throw error to react-query
+      }
+      return data as Task[];
+    },
+  });
 
   const fetchUserProfile = useCallback(async () => {
     setLoadingProfile(true);
@@ -91,8 +90,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchUserProfile();
-    fetchTasks();
-  }, [fetchUserProfile, fetchTasks]);
+  }, [fetchUserProfile]);
 
   useEffect(() => {
     if (userFirstName) {
@@ -103,13 +101,13 @@ const Dashboard = () => {
   }, [userFirstName]);
 
   // Apply filters to the latest 10 tasks for the dashboard section
-  useEffect(() => {
+  const filteredDashboardTasks = React.useMemo(() => {
     let currentTasks = [...allTasks];
 
     if (selectedDate) {
       const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
       currentTasks = currentTasks.filter(task =>
-        format(new Date(task.created_at), "yyyy-MM-dd") === formattedSelectedDate
+        task.created_at && format(new Date(task.created_at), "yyyy-MM-dd") === formattedSelectedDate
       );
     }
     if (selectedPriority !== "all") {
@@ -119,7 +117,7 @@ const Dashboard = () => {
       currentTasks = currentTasks.filter(task => task.status === selectedStatus);
     }
 
-    setFilteredDashboardTasks(currentTasks.slice(0, 10)); // Always show max 10 filtered tasks
+    return currentTasks.slice(0, 10); // Always show max 10 filtered tasks
   }, [allTasks, selectedDate, selectedPriority, selectedStatus]);
 
 
@@ -132,7 +130,7 @@ const Dashboard = () => {
 
   return (
     <PageTransitionWrapper>
-      <div className="flex flex-col items-center w-full"> {/* Removed max-w-4xl here */}
+      <div className="flex flex-col items-center w-full">
         <div className="text-center space-y-4 mb-8 mt-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
             {isLoading ? "Loading Dashboard..." : greeting}
@@ -212,7 +210,7 @@ const Dashboard = () => {
               </Select>
             </div>
 
-            <LatestTasksSection tasks={filteredDashboardTasks} totalTaskCount={totalTasks} onTaskChange={fetchTasks} />
+            <LatestTasksSection tasks={filteredDashboardTasks} totalTaskCount={totalTasks} onTaskChange={refetchTasks} />
           </>
         )}
       </div>

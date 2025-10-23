@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, CalendarIcon, CheckCircle, PlayCircle } from "lucide-react"; // Import CheckCircle and PlayCircle
+import { Loader2, ArrowLeft, CalendarIcon, CheckCircle, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,9 +13,10 @@ import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion"; // Import motion
-import EditTaskDialog from "@/components/EditTaskDialog"; // Import EditTaskDialog
-import DeleteTaskDialog from "@/components/DeleteTaskDialog"; // Import DeleteTaskDialog
+import { motion } from "framer-motion";
+import EditTaskDialog from "@/components/EditTaskDialog";
+import DeleteTaskDialog from "@/components/DeleteTaskDialog";
+import { useQuery, useQueryClient } from "@tanstack/react-query"; // Import useQuery and useQueryClient
 
 interface Task {
   id: string;
@@ -33,7 +34,7 @@ const containerVariants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1, // Stagger the animation of children by 0.1 seconds
+      staggerChildren: 0.1,
     },
   },
 };
@@ -45,14 +46,14 @@ const itemVariants = {
 
 const TaskListPage: React.FC = () => {
   const { status } = useParams<{ status: string }>();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null); // To track which task is being updated
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   const { toast } = useToast();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined); // New state for date filter
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const queryClient = useQueryClient(); // Initialize useQueryClient
 
-  const fetchTasksByStatus = useCallback(async () => {
-    setLoading(true);
+  const fetchTasks = useCallback(async () => {
+    if (!status) return []; // Handle case where status might be undefined
+
     let query = supabase
       .from("tasks")
       .select("*")
@@ -73,16 +74,16 @@ const TaskListPage: React.FC = () => {
         description: error.message,
         variant: "destructive",
       });
-      setTasks([]);
-    } else {
-      setTasks(data as Task[]);
+      throw error;
     }
-    setLoading(false);
-  }, [status, toast, selectedDate]); // Add selectedDate to dependencies
+    return data as Task[];
+  }, [status, toast, selectedDate]);
 
-  useEffect(() => {
-    fetchTasksByStatus();
-  }, [fetchTasksByStatus]);
+  const { data: tasks = [], isLoading: loading, refetch: refetchTasksByStatus } = useQuery<Task[]>({
+    queryKey: ['tasks', status, { date: selectedDate?.toISOString() }],
+    queryFn: fetchTasks,
+    enabled: !!status, // Only run query if status is defined
+  });
 
   const handleUpdateStatus = async (taskId: string, newStatus: "in-progress" | "completed") => {
     setIsUpdatingStatus(taskId);
@@ -98,7 +99,7 @@ const TaskListPage: React.FC = () => {
         title: "Task Status Updated!",
         description: `Task moved to ${newStatus}.`,
       });
-      fetchTasksByStatus(); // Refresh tasks
+      queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate tasks query to trigger re-fetch
     } catch (error: any) {
       toast({
         title: "Failed to update task status",
@@ -241,8 +242,8 @@ const TaskListPage: React.FC = () => {
                             In Progress
                           </Button>
                         )}
-                        <EditTaskDialog task={task} onTaskUpdated={fetchTasksByStatus} />
-                        <DeleteTaskDialog taskId={task.id} onTaskDeleted={fetchTasksByStatus} />
+                        <EditTaskDialog task={task} onTaskUpdated={refetchTasksByStatus} />
+                        <DeleteTaskDialog taskId={task.id} onTaskDeleted={refetchTasksByStatus} />
                       </div>
                     </CardContent>
                   </Card>

@@ -77,11 +77,12 @@ const AuthLayout = () => {
     }
   };
 
-  const handleTaskCreated = () => {
-    if (isMobile) {
-      setIsMobileSidebarOpen(false);
-    }
-  };
+  // handleTaskCreated is no longer needed as react-query will handle data refresh
+  // const handleTaskCreated = () => {
+  //   if (isMobile) {
+  //     setIsMobileSidebarOpen(false);
+  //   }
+  // };
 
   if (isLoadingAuthCheck || showLoginSplashScreen) {
     return <SplashScreen text="Getting your tasks ready" />;
@@ -104,7 +105,7 @@ const AuthLayout = () => {
       />
       <div className={`flex flex-col flex-1 transition-all duration-300 ${mainContentMarginClass}`}>
         <Header
-          onTaskCreated={handleTaskCreated}
+          // onTaskCreated={handleTaskCreated} // Removed
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
           onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
@@ -115,7 +116,7 @@ const AuthLayout = () => {
         </main>
         {isMobile && (
           <div className="fixed bottom-4 right-4 z-40">
-            <CreateTaskDialog onTaskCreated={handleTaskCreated} />
+            <CreateTaskDialog /> {/* Removed onTaskCreated prop */}
           </div>
         )}
       </div>

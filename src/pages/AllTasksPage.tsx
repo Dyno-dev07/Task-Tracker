@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +20,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
-import { motion } from "framer-motion"; // Import motion
-import EditTaskDialog from "@/components/EditTaskDialog"; // Import EditTaskDialog
-import DeleteTaskDialog from "@/components/DeleteTaskDialog"; // Import DeleteTaskDialog
+import { motion } from "framer-motion";
+import EditTaskDialog from "@/components/EditTaskDialog";
+import DeleteTaskDialog from "@/components/DeleteTaskDialog";
+import { useQuery, useQueryClient } from "@tanstack/react-query"; // Import useQuery and useQueryClient
 
 interface Task {
   id: string;
@@ -41,7 +41,7 @@ const containerVariants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1, // Stagger the animation of children by 0.1 seconds
+      staggerChildren: 0.1,
     },
   },
 };
@@ -52,15 +52,13 @@ const itemVariants = {
 };
 
 const AllTasksPage: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
+  const { toast } = useToast();
+  const queryClient = useQueryClient(); // Initialize useQueryClient
 
-  const fetchAllTasks = useCallback(async () => {
-    setLoading(true);
+  const fetchTasks = useCallback(async () => {
     let query = supabase.from("tasks").select("*").order("created_at", { ascending: false });
 
     if (selectedDate) {
@@ -83,16 +81,15 @@ const AllTasksPage: React.FC = () => {
         description: error.message,
         variant: "destructive",
       });
-      setTasks([]);
-    } else {
-      setTasks(data as Task[]);
+      throw error;
     }
-    setLoading(false);
+    return data as Task[];
   }, [toast, selectedDate, selectedPriority, selectedStatus]);
 
-  useEffect(() => {
-    fetchAllTasks();
-  }, [fetchAllTasks]);
+  const { data: tasks = [], isLoading: loading, refetch: refetchAllTasks } = useQuery<Task[]>({
+    queryKey: ['tasks', { date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus }],
+    queryFn: fetchTasks,
+  });
 
   const getPriorityBadgeVariant = (priority: "low" | "medium" | "high") => {
     switch (priority) {
@@ -104,6 +101,29 @@ const AllTasksPage: React.FC = () => {
         return "destructive";
       default:
         return "secondary";
+    }
+  };
+
+  const handleUpdateStatus = async (taskId: string, newStatus: "in-progress" | "completed") => {
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: newStatus })
+        .eq("id", taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Task Status Updated!",
+        description: `Task moved to ${newStatus}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate tasks query to trigger re-fetch
+    } catch (error: any) {
+      toast({
+        title: "Failed to update task status",
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -187,13 +207,7 @@ const AllTasksPage: React.FC = () => {
                 <motion.div key={task.id} variants={itemVariants}>
                   <Card className="flex flex-col justify-between">
                     <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle>{task.title}</CardTitle>
-                        <div className="flex gap-1">
-                          <EditTaskDialog task={task} onTaskUpdated={fetchAllTasks} />
-                          <DeleteTaskDialog taskId={task.id} onTaskDeleted={fetchAllTasks} />
-                        </div>
-                      </div>
+                      <CardTitle>{task.title}</CardTitle>
                       <CardDescription className="flex items-center gap-2 mt-2">
                         <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                         <Badge variant="outline">{task.status}</Badge>
@@ -209,6 +223,30 @@ const AllTasksPage: React.FC = () => {
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Created: {format(new Date(task.created_at), "PPP")}
                       </p>
+                      <div className="flex justify-end gap-1 mt-4">
+                        {task.status === "in-progress" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(task.id, "completed")}
+                            disabled={false} // isUpdatingStatus removed
+                          >
+                            Complete
+                          </Button>
+                        )}
+                        {task.status === "pending" && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(task.id, "in-progress")}
+                            disabled={false} // isUpdatingStatus removed
+                          >
+                            In Progress
+                          </Button>
+                        )}
+                        <EditTaskDialog task={task} onTaskUpdated={refetchAllTasks} />
+                        <DeleteTaskDialog taskId={task.id} onTaskDeleted={refetchAllTasks} />
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
