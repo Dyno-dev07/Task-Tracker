@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { jsPDF } from "jspdf"; // Changed to named import
+import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import {
@@ -37,7 +37,7 @@ interface TaskCounts {
   completed_tasks: number;
 }
 
--- Define the return type for the RPC function for tasks with profiles
+// Define the return type for the RPC function for tasks with profiles
 interface TaskWithProfile {
   id: string;
   title: string;
