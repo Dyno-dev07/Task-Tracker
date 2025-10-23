@@ -93,6 +93,7 @@ TO authenticated
 USING (auth.uid() = user_id);
 
 -- Policy for users to delete their own tasks
+CREATE POLICY "Users can delete their own tasks"
 ON public.tasks FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
