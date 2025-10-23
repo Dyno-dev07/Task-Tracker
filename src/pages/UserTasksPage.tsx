@@ -23,7 +23,6 @@ import { motion } from "framer-motion";
 import EditTaskDialog from "@/components/EditTaskDialog";
 import DeleteTaskDialog from "@/components/DeleteTaskDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom"; // Import Link
 
 interface Task {
   id: string;
@@ -39,6 +38,7 @@ interface Task {
 interface UserProfile {
   id: string;
   first_name: string;
+  // Removed 'email' as it's not directly in the profiles table
 }
 
 const containerVariants = {
@@ -70,7 +70,7 @@ const UserTasksPage: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, first_name");
+        .select("id, first_name"); // Only selecting existing columns
       if (error) {
         toast({
           title: "Error fetching users",
@@ -152,7 +152,7 @@ const UserTasksPage: React.FC = () => {
                 ) : (
                   users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
-                      {user.first_name}
+                      {user.first_name} {/* Displaying only first name */}
                     </SelectItem>
                   ))
                 )}
@@ -230,35 +230,30 @@ const UserTasksPage: React.FC = () => {
             >
               {tasks.map((task) => (
                 <motion.div key={task.id} variants={itemVariants}>
-                  <Link to={`/task/${task.id}`} className="block h-full"> {/* Wrap Card with Link */}
-                    <Card className="flex flex-col justify-between h-full hover:shadow-lg transition-shadow duration-200">
-                      <CardHeader>
-                        <CardTitle>{task.title}</CardTitle>
-                        <CardDescription className="flex items-center gap-2 mt-2">
-                          <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
-                          <Badge variant="outline">{task.status}</Badge>
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
-                        {task.due_date && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Due: {format(new Date(task.due_date), "PPP")}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Created: {format(new Date(task.created_at), "PPP")}
+                  <Card className="flex flex-col justify-between h-full">
+                    <CardHeader>
+                      <CardTitle>{task.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-2 mt-2">
+                        <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
+                        <Badge variant="outline">{task.status}</Badge>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
+                      {task.due_date && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Due: {format(new Date(task.due_date), "PPP")}
                         </p>
-                        {/* Edit and Delete buttons are now inside the Link, but they will still work due to event bubbling.
-                            However, for better UX, it's often preferred to have these actions outside the main navigation link
-                            or to stop propagation on their click handlers if they are nested. For now, this works. */}
-                        <div className="flex justify-end gap-1 mt-4">
-                          <EditTaskDialog task={task} onTaskUpdated={refetchUserTasks} />
-                          <DeleteTaskDialog taskId={task.id} onTaskDeleted={refetchUserTasks} />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                      )}
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Created: {format(new Date(task.created_at), "PPP")}
+                      </p>
+                      <div className="flex justify-end gap-1 mt-4">
+                        <EditTaskDialog task={task} onTaskUpdated={refetchUserTasks} />
+                        <DeleteTaskDialog taskId={task.id} onTaskDeleted={refetchUserTasks} />
+                      </div>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </motion.div>

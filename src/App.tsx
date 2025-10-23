@@ -15,9 +15,8 @@ import SettingsPage from "./pages/SettingsPage";
 import UserTasksPage from "./pages/UserTasksPage";
 import TaskSummaryPage from "./pages/TaskSummaryPage";
 import ReportsPage from "./pages/ReportsPage";
-import TaskDetailsPage from "./pages/TaskDetailsPage"; // Import the new page
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
-import AdminRouteGuard from "./components/AdminRouteGuard";
+import AdminRouteGuard from "./components/AdminRouteGuard"; // Import AdminRouteGuard
 import { AnimatePresence } from "framer-motion";
 import React from "react";
 
@@ -49,7 +48,6 @@ const App = () => (
               <Route path="/dashboard" element={<AnimatedRoute><Dashboard /></AnimatedRoute>} />
               <Route path="/tasks/all" element={<AnimatedRoute><AllTasksPage /></AnimatedRoute>} />
               <Route path="/tasks/:status" element={<AnimatedRoute><TaskListPage /></AnimatedRoute>} />
-              <Route path="/task/:taskId" element={<AnimatedRoute><TaskDetailsPage /></AnimatedRoute>} /> {/* New route for task details */}
               <Route path="/settings" element={<AnimatedRoute><SettingsPage /></AnimatedRoute>} />
               {/* Admin Routes protected by AdminRouteGuard */}
               <Route element={<AdminRouteGuard />}>
