@@ -132,7 +132,7 @@ const Dashboard = () => {
 
   return (
     <PageTransitionWrapper>
-      <div className="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center w-full"> {/* Removed max-w-4xl here */}
         <div className="text-center space-y-4 mb-8 mt-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
             {isLoading ? "Loading Dashboard..." : greeting}
