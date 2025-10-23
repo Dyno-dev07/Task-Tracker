@@ -7,13 +7,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HeaderProps {
-  // onTaskCreated: () => void; // Removed
   onOpenMobileSidebar: () => void;
   onToggleDesktopSidebar: () => void;
   isDesktopSidebarOpen: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar, onToggleDesktopSidebar, isDesktopSidebarOpen }) => { // Removed onTaskCreated from props
+const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar, onToggleDesktopSidebar, isDesktopSidebarOpen }) => {
   const isMobile = useIsMobile();
 
   return (
@@ -31,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar, onToggleDesktopSid
       )}
       <div className="flex-grow"></div> {/* Spacer */}
       {!isMobile && (
-        <CreateTaskDialog /> {/* Removed onTaskCreated prop */}
+        <CreateTaskDialog />
       )}
     </header>
   );
