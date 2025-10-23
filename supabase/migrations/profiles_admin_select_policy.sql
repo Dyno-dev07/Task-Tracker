@@ -1,0 +1,6 @@
+CREATE POLICY "Admins can view all profiles"
+ON public.profiles FOR SELECT
+TO authenticated
+USING (
+  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'Admin'
+);
