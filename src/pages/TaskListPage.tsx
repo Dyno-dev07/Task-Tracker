@@ -167,13 +167,7 @@ const TaskListPage: React.FC = () => {
                 <motion.div key={task.id} variants={itemVariants}>
                   <Card className="flex flex-col justify-between h-full">
                     <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle>{task.title}</CardTitle>
-                        <div className="flex gap-1">
-                          <EditTaskDialog task={task} onTaskUpdated={fetchTasksByStatus} />
-                          <DeleteTaskDialog taskId={task.id} onTaskDeleted={fetchTasksByStatus} />
-                        </div>
-                      </div>
+                      <CardTitle>{task.title}</CardTitle>
                       <CardDescription className="flex items-center gap-2 mt-2">
                         <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                         <Badge variant="outline">{task.status}</Badge>
@@ -189,6 +183,10 @@ const TaskListPage: React.FC = () => {
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Created: {format(new Date(task.created_at), "PPP")}
                       </p>
+                      <div className="flex justify-end gap-1 mt-4"> {/* Moved action buttons here */}
+                        <EditTaskDialog task={task} onTaskUpdated={fetchTasksByStatus} />
+                        <DeleteTaskDialog taskId={task.id} onTaskDeleted={fetchTasksByStatus} />
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
