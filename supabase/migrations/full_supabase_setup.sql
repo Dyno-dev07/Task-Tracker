@@ -12,8 +12,7 @@ DROP FUNCTION IF EXISTS public.get_all_tasks();
 DROP FUNCTION IF EXISTS public.get_all_task_counts();
 DROP FUNCTION IF EXISTS public.get_all_tasks_with_profiles(text, text, text, uuid, text, text);
 
--- Drop existing ENUM types if they exist (only if you're sure they are not used elsewhere)
--- This is important if you're changing the definition or if they were implicitly created incorrectly.
+-- Drop existing ENUM types if they exist
 DROP TYPE IF EXISTS public.priority_enum;
 DROP TYPE IF EXISTS public.status_enum;
 
@@ -21,11 +20,22 @@ DROP TYPE IF EXISTS public.status_enum;
 CREATE TYPE public.priority_enum AS ENUM ('low', 'medium', 'high');
 CREATE TYPE public.status_enum AS ENUM ('pending', 'in-progress', 'completed');
 
+-- Handle default constraints before altering column types for tasks table
+-- Remove existing default constraints
+ALTER TABLE public.tasks ALTER COLUMN priority DROP DEFAULT;
+ALTER TABLE public.tasks ALTER COLUMN status DROP DEFAULT;
+
 -- Alter tasks table to use the new ENUM types
--- This assumes your tasks table already exists. If not, you'd create it here.
 ALTER TABLE public.tasks
 ALTER COLUMN priority TYPE public.priority_enum USING priority::public.priority_enum,
 ALTER COLUMN status TYPE public.status_enum USING status::public.status_enum;
+
+-- Add default constraints back, explicitly casting to the ENUM types
+ALTER TABLE public.tasks ALTER COLUMN priority SET DEFAULT 'medium'::public.priority_enum;
+ALTER TABLE public.tasks ALTER COLUMN status SET DEFAULT 'pending'::public.status_enum;
+
+-- Ensure profiles.role has a default value
+ALTER TABLE public.profiles ALTER COLUMN role SET DEFAULT 'Regular'::text; -- Assuming 'role' is text, adjust if it's an enum
 
 -- Enable Row Level Security for profiles and tasks tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -63,8 +73,6 @@ USING (
 );
 
 -- Policy for tasks table: ONLY allow users to view their own tasks by default
--- This policy will now apply to ALL authenticated users, including Admins,
--- when they query the 'tasks' table directly.
 CREATE POLICY "Users can view their own tasks"
 ON public.tasks FOR SELECT
 TO authenticated
@@ -85,7 +93,6 @@ TO authenticated
 USING (auth.uid() = user_id);
 
 -- Policy for users to delete their own tasks
-CREATE POLICY "Users can delete their own tasks"
 ON public.tasks FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
@@ -143,8 +150,8 @@ RETURNS TABLE(
     id uuid,
     title text,
     description text,
-    status public.status_enum, -- Use the new ENUM type
-    priority public.priority_enum, -- Use the new ENUM type
+    status public.status_enum,
+    priority public.priority_enum,
     due_date timestamptz,
     created_at timestamptz,
     user_id uuid,
