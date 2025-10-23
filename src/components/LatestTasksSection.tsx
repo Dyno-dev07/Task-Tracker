@@ -63,7 +63,7 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
         <p className="text-lg text-gray-600 dark:text-gray-400 text-center">No tasks found with the current filters.</p>
       ) : (
         <motion.div
-          className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-4 grid-cols-1 md:grid-cols-2" // Changed to grid-cols-2 for all relevant screen sizes
           variants={containerVariants}
           initial="hidden"
           animate="show"
