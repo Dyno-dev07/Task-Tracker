@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, FileText, Download, Briefcase } from "lucide-react"; // Added Briefcase icon
+import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, FileText, Download, Briefcase } from "lucide-react";
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf"; // Changed to named import
 import "jspdf-autotable";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import {
@@ -37,7 +37,7 @@ interface TaskCounts {
   completed_tasks: number;
 }
 
-// Define the return type for the RPC function for tasks with profiles
+-- Define the return type for the RPC function for tasks with profiles
 interface TaskWithProfile {
   id: string;
   title: string;
@@ -283,7 +283,7 @@ const TaskSummaryPage: React.FC = () => {
             </div>
           )}
 
-          <Card className="p-6 space-y-4 mt-12"> {/* Moved this card down */}
+          <Card className="p-6 space-y-4 mt-12">
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-3">
                 <FileText className="h-6 w-6 text-primary" />
