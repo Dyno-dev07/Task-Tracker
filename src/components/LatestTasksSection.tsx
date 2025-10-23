@@ -57,13 +57,13 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
   };
 
   return (
-    <div className="w-full max-w-4xl space-y-6">
+    <div className="w-full max-w-7xl space-y-6"> {/* Increased max-w to accommodate 5 columns */}
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">Latest Tasks</h2>
       {tasks.length === 0 ? (
         <p className="text-lg text-gray-600 dark:text-gray-400 text-center">No tasks found with the current filters.</p>
       ) : (
         <motion.div
-          className="grid gap-4 grid-cols-1 md:grid-cols-2" // Changed to grid-cols-2 for all relevant screen sizes
+          className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" // Adjusted for 5 columns on extra large screens
           variants={containerVariants}
           initial="hidden"
           animate="show"
