@@ -10,13 +10,14 @@ interface HeaderProps {
   onOpenMobileSidebar: () => void;
   onToggleDesktopSidebar: () => void;
   isDesktopSidebarOpen: boolean;
+  userRole: "Admin" | "Regular" | null; // Add userRole prop
 }
 
-const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar, onToggleDesktopSidebar, isDesktopSidebarOpen }) => {
+const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar, onToggleDesktopSidebar, isDesktopSidebarOpen, userRole }) => { // Accept userRole
   const isMobile = useIsMobile();
 
   return (
-    <div> {/* Added a wrapper div here */}
+    <div>
       <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 justify-between">
         {isMobile ? (
           <Button variant="ghost" size="icon" onClick={onOpenMobileSidebar} className="md:hidden">
@@ -29,12 +30,12 @@ const Header: React.FC<HeaderProps> = ({ onOpenMobileSidebar, onToggleDesktopSid
             <span className="sr-only">Toggle desktop sidebar</span>
           </Button>
         )}
-        <div className="flex-grow"></div> {/* Spacer */}
+        <div className="flex-grow"></div>
         {!isMobile && (
           <CreateTaskDialog />
         )}
       </header>
-    </div> // Closing wrapper div
+    </div>
   );
 };
 

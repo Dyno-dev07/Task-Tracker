@@ -11,14 +11,16 @@ import Dashboard from "./pages/Dashboard";
 import AuthLayout from "./components/AuthLayout";
 import TaskListPage from "./pages/TaskListPage";
 import AllTasksPage from "./pages/AllTasksPage";
-import SettingsPage from "./pages/SettingsPage"; // Import SettingsPage
+import SettingsPage from "./pages/SettingsPage";
+import UserTasksPage from "./pages/UserTasksPage"; // Import new admin pages
+import TaskSummaryPage from "./pages/TaskSummaryPage";
+import ReportsPage from "./pages/ReportsPage";
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import { AnimatePresence } from "framer-motion";
-import React from "react"; // Import React for useEffect
+import React from "react";
 
 const queryClient = new QueryClient();
 
-// Create a wrapper component for routes that need PageTransitionWrapper
 const AnimatedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
@@ -45,7 +47,11 @@ const App = () => (
               <Route path="/dashboard" element={<AnimatedRoute><Dashboard /></AnimatedRoute>} />
               <Route path="/tasks/all" element={<AnimatedRoute><AllTasksPage /></AnimatedRoute>} />
               <Route path="/tasks/:status" element={<AnimatedRoute><TaskListPage /></AnimatedRoute>} />
-              <Route path="/settings" element={<AnimatedRoute><SettingsPage /></AnimatedRoute>} /> {/* New Settings Route */}
+              <Route path="/settings" element={<AnimatedRoute><SettingsPage /></AnimatedRoute>} />
+              {/* Admin Routes */}
+              <Route path="/admin/users-tasks" element={<AnimatedRoute><UserTasksPage /></AnimatedRoute>} />
+              <Route path="/admin/task-summary" element={<AnimatedRoute><TaskSummaryPage /></AnimatedRoute>} />
+              <Route path="/admin/reports" element={<AnimatedRoute><ReportsPage /></AnimatedRoute>} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<AnimatedRoute><NotFound /></AnimatedRoute>} />
