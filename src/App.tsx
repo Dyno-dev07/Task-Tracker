@@ -14,7 +14,7 @@ import AllTasksPage from "./pages/AllTasksPage";
 import SettingsPage from "./pages/SettingsPage";
 import UserTasksPage from "./pages/UserTasksPage";
 import TaskSummaryPage from "./pages/TaskSummaryPage";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper";
+import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Directly import
 import AdminRouteGuard from "./components/AdminRouteGuard";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -23,15 +23,7 @@ import React from "react";
 
 const queryClient = new QueryClient();
 
-// This component wraps each route's content with PageTransitionWrapper and applies the key
-const AnimatedRoute = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  return (
-    <PageTransitionWrapper key={location.pathname}>
-      {children}
-    </PageTransitionWrapper>
-  );
-};
+// Removed AnimatedRoute component
 
 // New component to handle routes and AnimatePresence
 const AppRoutes = () => {
@@ -39,26 +31,26 @@ const AppRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}> {/* Added key={location.pathname} here */}
-        <Route path="/" element={<AnimatedRoute><Index /></AnimatedRoute>} />
-        <Route path="/signup" element={<AnimatedRoute><SignUp /></AnimatedRoute>} />
-        <Route path="/login" element={<AnimatedRoute><Login /></AnimatedRoute>} />
-        <Route path="/forgot-password" element={<AnimatedRoute><ForgotPassword /></AnimatedRoute>} />
-        <Route path="/update-password" element={<AnimatedRoute><UpdatePassword /></AnimatedRoute>} />
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransitionWrapper><Index /></PageTransitionWrapper>} />
+        <Route path="/signup" element={<PageTransitionWrapper><SignUp /></PageTransitionWrapper>} />
+        <Route path="/login" element={<PageTransitionWrapper><Login /></PageTransitionWrapper>} />
+        <Route path="/forgot-password" element={<PageTransitionWrapper><ForgotPassword /></PageTransitionWrapper>} />
+        <Route path="/update-password" element={<PageTransitionWrapper><UpdatePassword /></PageTransitionWrapper>} />
         {/* Protected routes */}
         <Route element={<AuthLayout />}>
-          <Route path="/dashboard" element={<AnimatedRoute><Dashboard /></AnimatedRoute>} />
-          <Route path="/tasks/all" element={<AnimatedRoute><AllTasksPage /></AnimatedRoute>} />
-          <Route path="/tasks/:status" element={<AnimatedRoute><TaskListPage /></AnimatedRoute>} />
-          <Route path="/settings" element={<AnimatedRoute><SettingsPage /></AnimatedRoute>} />
+          <Route path="/dashboard" element={<PageTransitionWrapper><Dashboard /></PageTransitionWrapper>} />
+          <Route path="/tasks/all" element={<PageTransitionWrapper><AllTasksPage /></PageTransitionWrapper>} />
+          <Route path="/tasks/:status" element={<PageTransitionWrapper><TaskListPage /></PageTransitionWrapper>} />
+          <Route path="/settings" element={<PageTransitionWrapper><SettingsPage /></PageTransitionWrapper>} />
           {/* Admin Routes protected by AdminRouteGuard */}
           <Route element={<AdminRouteGuard />}>
-            <Route path="/admin/users-tasks" element={<AnimatedRoute><UserTasksPage /></AnimatedRoute>} />
-            <Route path="/admin/task-summary" element={<AnimatedRoute><TaskSummaryPage /></AnimatedRoute>} />
+            <Route path="/admin/users-tasks" element={<PageTransitionWrapper><UserTasksPage /></PageTransitionWrapper>} />
+            <Route path="/admin/task-summary" element={<PageTransitionWrapper><TaskSummaryPage /></PageTransitionWrapper>} />
           </Route>
         </Route>
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<AnimatedRoute><NotFound /></AnimatedRoute>} />
+        <Route path="*" element={<PageTransitionWrapper><NotFound /></PageTransitionWrapper>} />
       </Routes>
     </AnimatePresence>
   );

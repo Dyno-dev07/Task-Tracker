@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "react-router-dom"; // Import useLocation
 
 interface PageTransitionWrapperProps {
   children: React.ReactNode;
@@ -35,8 +36,11 @@ const pageVariants = {
 };
 
 const PageTransitionWrapper: React.FC<PageTransitionWrapperProps> = ({ children }) => {
+  const location = useLocation(); // Get location inside the wrapper
+
   return (
     <motion.div
+      key={location.pathname} // Apply key here
       variants={pageVariants}
       initial="initial"
       animate="animate"
