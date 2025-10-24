@@ -62,9 +62,16 @@ const AllTasksPage: React.FC = () => {
     let query = supabase.from("tasks").select("*").order("created_at", { ascending: false });
 
     if (selectedDate) {
-      const startOfDay = format(selectedDate, "yyyy-MM-ddT00:00:00.000Z");
-      const endOfDay = format(selectedDate, "yyyy-MM-ddT23:59:59.999Z");
-      query = query.gte("created_at", startOfDay).lte("created_at", endOfDay);
+      // Set start and end of the selected day in local time, then convert to ISO string (which is UTC)
+      const startOfDayLocal = new Date(selectedDate);
+      startOfDayLocal.setHours(0, 0, 0, 0);
+      const startOfDayUTC = startOfDayLocal.toISOString();
+
+      const endOfDayLocal = new Date(selectedDate);
+      endOfDayLocal.setHours(23, 59, 59, 999);
+      const endOfDayUTC = endOfDayLocal.toISOString();
+
+      query = query.gte("created_at", startOfDayUTC).lte("created_at", endOfDayUTC);
     }
     if (selectedPriority !== "all") {
       query = query.eq("priority", selectedPriority);
