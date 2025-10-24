@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, FileText, Download, Briefcase } from "lucide-react";
+import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Re-adding this import
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TaskStatsCard from "@/components/TaskStatsCard";

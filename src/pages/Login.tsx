@@ -18,6 +18,7 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import PasswordInput from "@/components/PasswordInput"; // Import the new component
+import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Re-adding this import
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -60,57 +61,59 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
-        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
-          Log In to Your Account
-        </h2>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="john.doe@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <PasswordInput placeholder="••••••••" {...field} /> {/* Use PasswordInput */}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full">
-              Log In
-            </Button>
-          </form>
-        </Form>
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-          <Link to="/forgot-password" className="text-blue-600 hover:underline">
-            Forgot password?
-          </Link>
-        </p>
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-blue-600 hover:underline">
-            Sign Up
-          </Link>
-        </p>
+    <PageTransitionWrapper>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
+          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+            Log In to Your Account
+          </h2>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="john.doe@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <PasswordInput placeholder="••••••••" {...field} /> {/* Use PasswordInput */}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full">
+                Log In
+              </Button>
+            </form>
+          </Form>
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+            <Link to="/forgot-password" className="text-blue-600 hover:underline">
+              Forgot password?
+            </Link>
+          </p>
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-blue-600 hover:underline">
+              Sign Up
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </PageTransitionWrapper>
   );
 };
 
