@@ -84,10 +84,23 @@ const UserTasksPage: React.FC = () => {
 
   // Fetch tasks based on filters and selected user using the RPC function
   const fetchTasks = useCallback(async () => {
+    let startDateISO = null;
+    let endDateISO = null;
+
+    if (selectedDate) {
+      const startOfDayLocal = new Date(selectedDate);
+      startOfDayLocal.setHours(0, 0, 0, 0);
+      startDateISO = startOfDayLocal.toISOString();
+
+      const endOfDayLocal = new Date(selectedDate);
+      endOfDayLocal.setHours(23, 59, 59, 999);
+      endDateISO = endOfDayLocal.toISOString();
+    }
+
     const { data, error } = await supabase.rpc('get_all_tasks_with_profiles', {
       user_id_filter: selectedUserId === "all" ? null : selectedUserId,
-      start_date_iso: selectedDate ? format(selectedDate, "yyyy-MM-ddT00:00:00.000Z") : null,
-      end_date_iso: selectedDate ? format(selectedDate, "yyyy-MM-ddT23:59:59.999Z") : null,
+      start_date_iso: startDateISO,
+      end_date_iso: endDateISO,
       priority_filter: selectedPriority === "all" ? null : selectedPriority,
       status_filter: selectedStatus === "all" ? null : selectedStatus,
     });
