@@ -130,12 +130,14 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
                         onClick={() => handleUpdateStatus(task.id, "completed")}
                         disabled={isUpdatingStatus === task.id}
                       >
-                        {isUpdatingStatus === task.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                        )}
-                        Complete
+                        <span className="inline-flex items-center">
+                          {isUpdatingStatus === task.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                          )}
+                          Complete
+                        </span>
                       </Button>
                     )}
                     {task.status === "pending" && (
@@ -145,12 +147,14 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
                         onClick={() => handleUpdateStatus(task.id, "in-progress")}
                         disabled={isUpdatingStatus === task.id}
                       >
-                        {isUpdatingStatus === task.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <PlayCircle className="mr-2 h-4 w-4" />
-                        )}
-                        In Progress
+                        <span className="inline-flex items-center">
+                          {isUpdatingStatus === task.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <PlayCircle className="mr-2 h-4 w-4" />
+                          )}
+                          In Progress
+                        </span>
                       </Button>
                     )}
                     <EditTaskDialog task={task} onTaskUpdated={onTaskChange} />

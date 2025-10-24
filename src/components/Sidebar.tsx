@@ -61,7 +61,7 @@ const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void
               )}
             >
               <Icon className="h-4 w-4" />
-              {isDesktopSidebarOpen && item.name}
+              {isDesktopSidebarOpen && <span>{item.name}</span>}
             </Link>
           );
         })}
@@ -69,7 +69,7 @@ const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void
       <div className="mt-auto">
         <Button onClick={onLogout} className={cn("w-full flex items-center gap-3", !isDesktopSidebarOpen && "justify-center")}>
           <LogOut className="h-4 w-4" />
-          {isDesktopSidebarOpen && "Logout"}
+          {isDesktopSidebarOpen && <span>Logout</span>}
         </Button>
       </div>
     </div>
