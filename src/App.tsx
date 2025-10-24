@@ -18,43 +18,39 @@ import AdminRouteGuard from "./components/AdminRouteGuard";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion"; // Import AnimatePresence and motion
+// Removed AnimatePresence and motion imports for debugging
 
 const queryClient = new QueryClient();
 
-const pageVariants = {
-  initial: { opacity: 0, y: 20, scale: 0.98 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 150, damping: 25, mass: 1 } },
-  exit: { opacity: 0, y: 0, scale: 0.98, transition: { duration: 0.2 } },
-};
+// Removed pageVariants as animations are temporarily disabled
 
 const AppRoutes = () => {
-  const location = useLocation();
+  // Removed useLocation as it's only needed for AnimatePresence
+  // const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait"> {/* Use AnimatePresence here */}
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><Index /></motion.div>} />
-        <Route path="/signup" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><SignUp /></motion.div>} />
-        <Route path="/login" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><Login /></motion.div>} />
-        <Route path="/forgot-password" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><ForgotPassword /></motion.div>} />
-        <Route path="/update-password" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><UpdatePassword /></motion.div>} />
-        {/* Protected routes */}
-        <Route element={<AuthLayout />}>
-          <Route path="/dashboard" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><Dashboard /></motion.div>} />
-          <Route path="/tasks/all" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><AllTasksPage /></motion.div>} />
-          <Route path="/tasks/:status" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><TaskListPage /></motion.div>} />
-          <Route path="/settings" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><SettingsPage /></motion.div>} />
-          {/* Admin Routes protected by AdminRouteGuard */}
-          <Route element={<AdminRouteGuard />}>
-            <Route path="/admin/users-tasks" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><UserTasksPage /></motion.div>} />
-            <Route path="/admin/task-summary" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><TaskSummaryPage /></motion.div>} />
-          </Route>
+    // Removed AnimatePresence wrapper
+    <Routes> {/* Removed location and key props as they are for AnimatePresence */}
+      <Route path="/" element={<Index />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/update-password" element={<UpdatePassword />} />
+      {/* Protected routes */}
+      <Route element={<AuthLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/tasks/all" element={<AllTasksPage />} />
+        <Route path="/tasks/:status" element={<TaskListPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        {/* Admin Routes protected by AdminRouteGuard */}
+        <Route element={<AdminRouteGuard />}>
+          <Route path="/admin/users-tasks" element={<UserTasksPage />} />
+          <Route path="/admin/task-summary" element={<TaskSummaryPage />} />
         </Route>
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit"><NotFound /></motion.div>} />
-      </Routes>
-    </AnimatePresence>
+      </Route>
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 
