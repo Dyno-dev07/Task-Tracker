@@ -14,7 +14,7 @@ import AllTasksPage from "./pages/AllTasksPage";
 import SettingsPage from "./pages/SettingsPage";
 import UserTasksPage from "./pages/UserTasksPage";
 import TaskSummaryPage from "./pages/TaskSummaryPage";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Directly import
+import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import AdminRouteGuard from "./components/AdminRouteGuard";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -23,7 +23,6 @@ import React from "react";
 
 const queryClient = new QueryClient();
 
-// New component to handle routes and AnimatePresence
 const AppRoutes = () => {
   const location = useLocation();
 
@@ -57,12 +56,12 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      {/* Wrapped children in a React.Fragment */}
+      {/* This React.Fragment ensures TooltipProvider has only one direct child */}
       <>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppRoutes /> {/* Render the new AppRoutes component */}
+          <AppRoutes />
         </BrowserRouter>
       </>
     </TooltipProvider>
