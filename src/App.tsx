@@ -16,20 +16,51 @@ import UserTasksPage from "./pages/UserTasksPage";
 import TaskSummaryPage from "./pages/TaskSummaryPage";
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import AdminRouteGuard from "./components/AdminRouteGuard";
-import ForgotPassword from "./pages/ForgotPassword"; // Import new page
-import UpdatePassword from "./pages/UpdatePassword"; // Import new page
+import ForgotPassword from "./pages/ForgotPassword";
+import UpdatePassword from "./pages/UpdatePassword";
 import { AnimatePresence } from "framer-motion";
 import React from "react";
 
 const queryClient = new QueryClient();
 
+// This component wraps each route's content with PageTransitionWrapper and applies the key
 const AnimatedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-
   return (
     <PageTransitionWrapper key={location.pathname}>
       {children}
     </PageTransitionWrapper>
+  );
+};
+
+// New component to handle routes and AnimatePresence
+const AppRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location}> {/* Pass location to Routes */}
+        <Route path="/" element={<AnimatedRoute><Index /></AnimatedRoute>} />
+        <Route path="/signup" element={<AnimatedRoute><SignUp /></AnimatedRoute>} />
+        <Route path="/login" element={<AnimatedRoute><Login /></AnimatedRoute>} />
+        <Route path="/forgot-password" element={<AnimatedRoute><ForgotPassword /></AnimatedRoute>} />
+        <Route path="/update-password" element={<AnimatedRoute><UpdatePassword /></AnimatedRoute>} />
+        {/* Protected routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="/dashboard" element={<AnimatedRoute><Dashboard /></AnimatedRoute>} />
+          <Route path="/tasks/all" element={<AnimatedRoute><AllTasksPage /></AnimatedRoute>} />
+          <Route path="/tasks/:status" element={<AnimatedRoute><TaskListPage /></AnimatedRoute>} />
+          <Route path="/settings" element={<AnimatedRoute><SettingsPage /></AnimatedRoute>} />
+          {/* Admin Routes protected by AdminRouteGuard */}
+          <Route element={<AdminRouteGuard />}>
+            <Route path="/admin/users-tasks" element={<AnimatedRoute><UserTasksPage /></AnimatedRoute>} />
+            <Route path="/admin/task-summary" element={<AnimatedRoute><TaskSummaryPage /></AnimatedRoute>} />
+          </Route>
+        </Route>
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<AnimatedRoute><NotFound /></AnimatedRoute>} />
+      </Routes>
+    </AnimatePresence>
   );
 };
 
@@ -39,29 +70,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route path="/" element={<AnimatedRoute><Index /></AnimatedRoute>} />
-            <Route path="/signup" element={<AnimatedRoute><SignUp /></AnimatedRoute>} />
-            <Route path="/login" element={<AnimatedRoute><Login /></AnimatedRoute>} />
-            <Route path="/forgot-password" element={<AnimatedRoute><ForgotPassword /></AnimatedRoute>} /> {/* New route */}
-            <Route path="/update-password" element={<AnimatedRoute><UpdatePassword /></AnimatedRoute>} /> {/* New route */}
-            {/* Protected routes */}
-            <Route element={<AuthLayout />}>
-              <Route path="/dashboard" element={<AnimatedRoute><Dashboard /></AnimatedRoute>} />
-              <Route path="/tasks/all" element={<AnimatedRoute><AllTasksPage /></AnimatedRoute>} />
-              <Route path="/tasks/:status" element={<AnimatedRoute><TaskListPage /></AnimatedRoute>} />
-              <Route path="/settings" element={<AnimatedRoute><SettingsPage /></AnimatedRoute>} />
-              {/* Admin Routes protected by AdminRouteGuard */}
-              <Route element={<AdminRouteGuard />}>
-                <Route path="/admin/users-tasks" element={<AnimatedRoute><UserTasksPage /></AnimatedRoute>} />
-                <Route path="/admin/task-summary" element={<AnimatedRoute><TaskSummaryPage /></AnimatedRoute>} />
-              </Route>
-            </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<AnimatedRoute><NotFound /></AnimatedRoute>} />
-          </Routes>
-        </AnimatePresence>
+        <AppRoutes /> {/* Render the new AppRoutes component */}
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
