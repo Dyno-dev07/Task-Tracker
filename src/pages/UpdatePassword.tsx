@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import PasswordInput from "@/components/PasswordInput"; // Use the new PasswordInput component
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Re-adding this import
 
 const formSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
@@ -95,21 +94,20 @@ const UpdatePassword = () => {
   }
 
   return (
-    <PageTransitionWrapper>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
-          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
-            Set New Password
-          </h2>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Enter your new password below.
-          </p>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
+        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+          Set New Password
+        </h2>
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          Enter your new password below.
+        </p>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
@@ -117,12 +115,12 @@ const UpdatePassword = () => {
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
                   <FormItem>
                     <FormLabel>Confirm New Password</FormLabel>
                     <FormControl>
@@ -130,23 +128,22 @@ const UpdatePassword = () => {
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Update Password"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </div>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Password"
+              )}
+            </Button>
+          </form>
+        </Form>
       </div>
-    </PageTransitionWrapper>
+    </div>
   );
 };
 

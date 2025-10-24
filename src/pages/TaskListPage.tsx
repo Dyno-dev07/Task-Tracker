@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import EditTaskDialog from "@/components/EditTaskDialog";
 import DeleteTaskDialog from "@/components/DeleteTaskDialog";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper"; // Re-adding this import
 import { useQuery, useQueryClient } from "@tanstack/react-query"; // Import useQuery and useQueryClient
 
 interface Task {
@@ -145,122 +144,120 @@ const TaskListPage: React.FC = () => {
   };
 
   return (
-    <PageTransitionWrapper>
-      <div className="flex flex-col items-center w-full">
-        <div className="w-full max-w-4xl text-center space-y-6 mt-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex-grow text-center">
-              {getStatusTitle(status)}
-            </h1>
-          </div>
-
-          {/* Calendar Filter */}
-          <div className="flex justify-center mb-6">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[200px] justify-start text-left font-normal",
-                    !selectedDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? format(selectedDate, "PPP") : <span>Filter by Date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  initialFocus
-                />
-                {selectedDate && (
-                  <div className="p-2">
-                    <Button variant="ghost" onClick={() => setSelectedDate(undefined)} className="w-full">Clear Date</Button>
-                  </div>
-                )}
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            </div>
-          ) : tasks.length === 0 ? (
-            <p className="text-lg text-gray-600 dark:text-gray-400">No {status} tasks found with the current filters.</p>
-          ) : (
-            <motion.div
-              className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {tasks.map((task) => (
-                <motion.div key={task.id} variants={itemVariants}>
-                  <Card className="flex flex-col justify-between h-full">
-                    <CardHeader>
-                      <CardTitle>{task.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2 mt-2">
-                        <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
-                        <Badge variant="outline">{task.status}</Badge>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
-                      {task.due_date && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Due: {format(new Date(task.due_date), "PPP")}
-                        </p>
-                      )}
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Created: {format(new Date(task.created_at), "PPP")}
-                      </p>
-                      <div className="flex justify-end gap-1 mt-4">
-                        {task.status === "in-progress" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUpdateStatus(task.id, "completed")}
-                            disabled={isUpdatingStatus === task.id}
-                          >
-                            {isUpdatingStatus === task.id ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                            )}
-                            Complete
-                          </Button>
-                        )}
-                        {task.status === "pending" && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleUpdateStatus(task.id, "in-progress")}
-                            disabled={isUpdatingStatus === task.id}
-                          >
-                            {isUpdatingStatus === task.id ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              <PlayCircle className="mr-2 h-4 w-4" />
-                            )}
-                            In Progress
-                          </Button>
-                        )}
-                        <EditTaskDialog task={task} onTaskUpdated={refetchTasksByStatus} />
-                        <DeleteTaskDialog taskId={task.id} onTaskDeleted={refetchTasksByStatus} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+    <div className="flex flex-col items-center w-full">
+      <div className="w-full max-w-4xl text-center space-y-6 mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex-grow text-center">
+            {getStatusTitle(status)}
+          </h1>
         </div>
+
+        {/* Calendar Filter */}
+        <div className="flex justify-center mb-6">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-[200px] justify-start text-left font-normal",
+                  !selectedDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? format(selectedDate, "PPP") : <span>Filter by Date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                initialFocus
+              />
+              {selectedDate && (
+                <div className="p-2">
+                  <Button variant="ghost" onClick={() => setSelectedDate(undefined)} className="w-full">Clear Date</Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          </div>
+        ) : tasks.length === 0 ? (
+          <p className="text-lg text-gray-600 dark:text-gray-400">No {status} tasks found with the current filters.</p>
+        ) : (
+          <motion.div
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+          >
+            {tasks.map((task) => (
+              <motion.div key={task.id} variants={itemVariants}>
+                <Card className="flex flex-col justify-between h-full">
+                  <CardHeader>
+                    <CardTitle>{task.title}</CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
+                      <Badge variant="outline">{task.status}</Badge>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
+                    {task.due_date && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Due: {format(new Date(task.due_date), "PPP")}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Created: {format(new Date(task.created_at), "PPP")}
+                    </p>
+                    <div className="flex justify-end gap-1 mt-4">
+                      {task.status === "in-progress" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUpdateStatus(task.id, "completed")}
+                          disabled={isUpdatingStatus === task.id}
+                        >
+                          {isUpdatingStatus === task.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                          )}
+                          Complete
+                        </Button>
+                      )}
+                      {task.status === "pending" && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleUpdateStatus(task.id, "in-progress")}
+                          disabled={isUpdatingStatus === task.id}
+                        >
+                          {isUpdatingStatus === task.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <PlayCircle className="mr-2 h-4 w-4" />
+                          )}
+                          In Progress
+                        </Button>
+                      )}
+                      <EditTaskDialog task={task} onTaskUpdated={refetchTasksByStatus} />
+                      <DeleteTaskDialog taskId={task.id} onTaskDeleted={refetchTasksByStatus} />
+                    </div>
+                  </CardContent>
+                  </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
-    </PageTransitionWrapper>
+    </div>
   );
 };
 
