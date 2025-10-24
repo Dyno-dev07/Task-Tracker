@@ -65,7 +65,7 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
         title: "Task Status Updated!",
         description: `Task moved to ${newStatus}.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate tasks query to trigger re-fetch
+      onTaskChange(); // Call the prop to invalidate queries in Dashboard
     } catch (error: any) {
       toast({
         title: "Failed to update task status",

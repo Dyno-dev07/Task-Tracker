@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import *s z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -98,7 +98,9 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
       });
       form.reset();
       setOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate tasks query to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ['overallTasksStats'] }); // Invalidate overall stats
+      queryClient.invalidateQueries({ queryKey: ['filteredTasks'] }); // Invalidate filtered tasks
+      queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate general tasks query (for other pages)
     } catch (error: any) {
       toast({
         title: "Failed to create task",

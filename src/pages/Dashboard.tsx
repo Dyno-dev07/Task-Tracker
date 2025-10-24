@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { useNavigate, useOutletContext } from "react-router-dom"; // Import useOutletContext
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import DashboardStats from "@/components/DashboardStats";
 import { Loader2, CalendarIcon } from "lucide-react";
@@ -20,9 +20,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useQuery } from "@tanstack/react-query";
-import GlobalAnnouncementDisplay from "@/components/GlobalAnnouncementDisplay"; // Import the renamed component
-import AdminAnnouncementManager from "@/components/AdminAnnouncementManager"; // Import the new admin component
+import { useQuery, useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
+import GlobalAnnouncementDisplay from "@/components/GlobalAnnouncementDisplay";
+import AdminAnnouncementManager from "@/components/AdminAnnouncementManager";
 
 // Define a type for your task data
 interface Task {
@@ -46,23 +46,43 @@ const Dashboard = () => {
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [greeting, setGreeting] = useState<string>("");
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const { userRole } = useOutletContext<AuthLayoutContext>(); // Get userRole from context
+  const { userRole } = useOutletContext<AuthLayoutContext>();
 
   // Filter states for dashboard tasks
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
 
-  // Fetch tasks using react-query (RLS will ensure only current user's tasks are fetched)
-  const { data: allTasks = [], isLoading: loadingTasks, refetch: refetchTasks } = useQuery<Task[]>({
-    queryKey: ['tasks'],
+  const queryClient = useQueryClient(); // Initialize useQueryClient
+
+  // Query for overall, unfiltered task counts for DashboardStats
+  const { data: overallTasks = [], isLoading: loadingOverallTasks } = useQuery<Task[]>({
+    queryKey: ['overallTasksStats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*"); // No filters here
+      if (error) {
+        toast({
+          title: "Error fetching overall tasks",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+      return data as Task[];
+    },
+  });
+
+  // Query for filtered tasks (for LatestTasksSection)
+  const { data: filteredTasksForList = [], isLoading: loadingFilteredTasks } = useQuery<Task[]>({
+    queryKey: ['filteredTasks', { date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus }],
     queryFn: async () => {
       let query = supabase
         .from("tasks")
         .select("*")
         .order("created_at", { ascending: false });
 
-      // Apply filters directly to the query for the current user's tasks
       if (selectedDate) {
         const formattedSelectedDate = format(selectedDate, "yyyy-MM-ddT00:00:00.000Z");
         const endOfDay = format(selectedDate, "yyyy-MM-ddT23:59:59.999Z");
@@ -79,11 +99,11 @@ const Dashboard = () => {
 
       if (error) {
         toast({
-          title: "Error fetching tasks",
+          title: "Error fetching filtered tasks",
           description: error.message,
           variant: "destructive",
         });
-        throw error; // Throw error to react-query
+        throw error;
       }
       return data as Task[];
     },
@@ -122,18 +142,24 @@ const Dashboard = () => {
     }
   }, [userFirstName]);
 
-  // The filteredDashboardTasks will now be based on the `allTasks` which are already filtered by RLS and component state
-  const filteredDashboardTasks = React.useMemo(() => {
-    return allTasks.slice(0, 10); // Always show max 10 filtered tasks
-  }, [allTasks]);
+  // Calculate stats from overallTasks (unfiltered)
+  const totalOverallTasks = overallTasks.length;
+  const pendingOverallTasks = overallTasks.filter((task) => task.status === "pending").length;
+  const inProgressOverallTasks = overallTasks.filter((task) => task.status === "in-progress").length;
+  const completedOverallTasks = overallTasks.filter((task) => task.status === "completed").length;
 
+  // Tasks for the LatestTasksSection (already filtered by dashboard filters)
+  const latestFilteredTasks = React.useMemo(() => {
+    return filteredTasksForList.slice(0, 10); // Always show max 10 filtered tasks
+  }, [filteredTasksForList]);
 
-  const totalTasks = allTasks.length;
-  const pendingTasks = allTasks.filter((task) => task.status === "pending").length;
-  const inProgressTasks = allTasks.filter((task) => task.status === "in-progress").length;
-  const completedTasks = allTasks.filter((task) => task.status === "completed").length;
+  const isLoading = loadingProfile || loadingOverallTasks || loadingFilteredTasks;
 
-  const isLoading = loadingTasks || loadingProfile;
+  // Callback to refetch both overall and filtered tasks when a task changes (create/edit/delete)
+  const handleTaskChange = () => {
+    queryClient.invalidateQueries({ queryKey: ['overallTasksStats'] });
+    queryClient.invalidateQueries({ queryKey: ['filteredTasks'] });
+  };
 
   return (
     <PageTransitionWrapper>
@@ -164,10 +190,10 @@ const Dashboard = () => {
         ) : (
           <>
             <DashboardStats
-              totalTasks={totalTasks}
-              pendingTasks={pendingTasks}
-              inProgressTasks={inProgressTasks}
-              completedTasks={completedTasks}
+              totalTasks={totalOverallTasks}
+              pendingTasks={pendingOverallTasks}
+              inProgressTasks={inProgressOverallTasks}
+              completedTasks={completedOverallTasks}
             />
 
             <div className="w-full max-w-4xl flex flex-wrap justify-center gap-4 my-8">
@@ -227,7 +253,7 @@ const Dashboard = () => {
               </Select>
             </div>
 
-            <LatestTasksSection tasks={filteredDashboardTasks} totalTaskCount={totalTasks} onTaskChange={refetchTasks} />
+            <LatestTasksSection tasks={latestFilteredTasks} totalTaskCount={filteredTasksForList.length} onTaskChange={handleTaskChange} />
           </>
         )}
       </div>
