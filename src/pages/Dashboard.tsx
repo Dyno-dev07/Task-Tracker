@@ -6,7 +6,6 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import DashboardStats from "@/components/DashboardStats";
 import { Loader2, CalendarIcon } from "lucide-react";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import LatestTasksSection from "@/components/LatestTasksSection";
 import {
   Select,
@@ -169,102 +168,100 @@ const Dashboard = () => {
   };
 
   return (
-    <PageTransitionWrapper>
-      <div className="flex flex-col items-center w-full">
-        <div className="text-center space-y-4 mb-8 mt-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            {isLoading ? "Loading Dashboard..." : greeting}
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
-            Check if you're slayin' your tasks or just existing in the office
-          </p>
-        </div>
-
-        {/* Global Announcement Display */}
-        <GlobalAnnouncementDisplay />
-
-        {/* Admin Announcement Manager (only for admins) */}
-        {userRole === "Admin" && (
-          <div className="w-full max-w-4xl mx-auto mb-8 flex justify-center">
-            <AdminAnnouncementManager />
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="flex items-center justify-center h-32">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          </div>
-        ) : (
-          <>
-            <DashboardStats
-              totalTasks={totalOverallTasks}
-              pendingTasks={pendingOverallTasks}
-              inProgressTasks={inProgressOverallTasks}
-              completedTasks={completedOverallTasks}
-            />
-
-            <div className="w-full max-w-4xl flex flex-wrap justify-center gap-4 my-8">
-              {/* Calendar Filter */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[200px] justify-start text-left font-normal",
-                      !selectedDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "PPP") : <span>Filter by Date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    initialFocus
-                  />
-                  {selectedDate && (
-                    <div className="p-2">
-                      <Button variant="ghost" onClick={() => setSelectedDate(undefined)} className="w-full">Clear Date</Button>
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
-
-              {/* Priority Filter */}
-              <Select onValueChange={(value: "all" | "low" | "medium" | "high") => setSelectedPriority(value)} value={selectedPriority}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Status Filter */}
-              <Select onValueChange={(value: "all" | "pending" | "in-progress" | "completed") => setSelectedStatus(value)} value={selectedStatus}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <LatestTasksSection tasks={latestFilteredTasks} totalTaskCount={filteredTasksForList.length} onTaskChange={handleTaskChange} />
-          </>
-        )}
+    <div className="flex flex-col items-center w-full">
+      <div className="text-center space-y-4 mb-8 mt-8">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+          {isLoading ? "Loading Dashboard..." : greeting}
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-400">
+          Check if you're slayin' your tasks or just existing in the office
+        </p>
       </div>
-    </PageTransitionWrapper>
+
+      {/* Global Announcement Display */}
+      <GlobalAnnouncementDisplay />
+
+      {/* Admin Announcement Manager (only for admins) */}
+      {userRole === "Admin" && (
+        <div className="w-full max-w-4xl mx-auto mb-8 flex justify-center">
+          <AdminAnnouncementManager />
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="flex items-center justify-center h-32">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        </div>
+      ) : (
+        <>
+          <DashboardStats
+            totalTasks={totalOverallTasks}
+            pendingTasks={pendingOverallTasks}
+            inProgressTasks={inProgressOverallTasks}
+            completedTasks={completedOverallTasks}
+          />
+
+          <div className="w-full max-w-4xl flex flex-wrap justify-center gap-4 my-8">
+            {/* Calendar Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[200px] justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, "PPP") : <span>Filter by Date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  initialFocus
+                />
+                {selectedDate && (
+                  <div className="p-2">
+                    <Button variant="ghost" onClick={() => setSelectedDate(undefined)} className="w-full">Clear Date</Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+
+            {/* Priority Filter */}
+            <Select onValueChange={(value: "all" | "low" | "medium" | "high") => setSelectedPriority(value)} value={selectedPriority}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Status Filter */}
+            <Select onValueChange={(value: "all" | "pending" | "in-progress" | "completed") => setSelectedStatus(value)} value={selectedStatus}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <LatestTasksSection tasks={latestFilteredTasks} totalTaskCount={filteredTasksForList.length} onTaskChange={handleTaskChange} />
+        </>
+      )}
+    </div>
   );
 };
 

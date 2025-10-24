@@ -4,7 +4,6 @@ import React, { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, FileText, Download, Briefcase } from "lucide-react";
-import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TaskStatsCard from "@/components/TaskStatsCard";
@@ -225,131 +224,129 @@ const TaskSummaryPage: React.FC = () => {
   };
 
   return (
-    <PageTransitionWrapper>
-      <div className="flex flex-col items-center w-full p-4 md:p-6">
-        <div className="w-full max-w-4xl text-center space-y-8 mt-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Overall Task Summary</h1>
+    <div className="flex flex-col items-center w-full p-4 md:p-6">
+      <div className="w-full max-w-4xl text-center space-y-8 mt-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Overall Task Summary</h1>
 
-          {loadingSummaryCounts ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        {loadingSummaryCounts ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <TaskStatsCard
+              title="Total Tasks"
+              value={taskCounts?.total_tasks || 0}
+              icon={<ListTodo />}
+              iconColor="text-blue-500 dark:text-blue-400"
+              to="/admin/task-summary"
+            />
+            <TaskStatsCard
+              title="Pending Tasks"
+              value={taskCounts?.pending_tasks || 0}
+              icon={<Hourglass />}
+              iconColor="text-yellow-500 dark:text-yellow-400"
+              to="/admin/task-summary"
+            />
+            <TaskStatsCard
+              title="In Progress"
+              value={taskCounts?.in_progress_tasks || 0}
+              icon={<PlayCircle />}
+              iconColor="text-orange-500 dark:text-orange-400"
+              to="/admin/task-summary"
+            />
+            <TaskStatsCard
+              title="Completed Tasks"
+              value={taskCounts?.completed_tasks || 0}
+              icon={<CheckCircle />}
+              iconColor="text-green-500 dark:text-green-400"
+              to="/admin/task-summary"
+            />
+          </div>
+        )}
+
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-12 mb-6">Tasks by Department Overview</h2>
+        {loadingAllTasks ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          </div>
+        ) : Object.keys(departmentTaskCounts).length === 0 ? (
+          <p className="text-lg text-gray-600 dark:text-gray-400">No tasks found across all departments.</p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Object.entries(departmentTaskCounts).map(([departmentName, count]) => (
+              <Card key={departmentName} className="flex flex-col justify-between h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{departmentName}</CardTitle>
+                  <Briefcase className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{count} Tasks</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <Card className="p-6 space-y-4 mt-12">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center gap-3">
+              <FileText className="h-6 w-6 text-primary" />
+              Generate Task Report
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <label htmlFor="report-period" className="w-full sm:w-auto text-left sm:text-right">Report Period:</label>
+              <Select onValueChange={(value: "week" | "month") => setReportPeriod(value)} value={reportPeriod}>
+                <SelectTrigger id="report-period" className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="week">Current Week</SelectItem>
+                  <SelectItem value="month">Current Month</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <TaskStatsCard
-                title="Total Tasks"
-                value={taskCounts?.total_tasks || 0}
-                icon={<ListTodo />}
-                iconColor="text-blue-500 dark:text-blue-400"
-                to="/admin/task-summary"
-              />
-              <TaskStatsCard
-                title="Pending Tasks"
-                value={taskCounts?.pending_tasks || 0}
-                icon={<Hourglass />}
-                iconColor="text-yellow-500 dark:text-yellow-400"
-                to="/admin/task-summary"
-              />
-              <TaskStatsCard
-                title="In Progress"
-                value={taskCounts?.in_progress_tasks || 0}
-                icon={<PlayCircle />}
-                iconColor="text-orange-500 dark:text-orange-400"
-                to="/admin/task-summary"
-              />
-              <TaskStatsCard
-                title="Completed Tasks"
-                value={taskCounts?.completed_tasks || 0}
-                icon={<CheckCircle />}
-                iconColor="text-green-500 dark:text-green-400"
-                to="/admin/task-summary"
-              />
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <label htmlFor="department-filter" className="w-full sm:w-auto text-left sm:text-right">Filter by Department:</label>
+              <Select onValueChange={(value: string | "all") => setSelectedReportDepartment(value)} value={selectedReportDepartment}>
+                <SelectTrigger id="department-filter" className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {loadingUsers ? (
+                    <SelectItem value="loading" disabled>Loading departments...</SelectItem>
+                  ) : (
+                    departments.map((dept) => (
+                      <SelectItem key={dept} value={dept}>
+                        {dept}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
-          )}
 
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-12 mb-6">Tasks by Department Overview</h2>
-          {loadingAllTasks ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            </div>
-          ) : Object.keys(departmentTaskCounts).length === 0 ? (
-            <p className="text-lg text-gray-600 dark:text-gray-400">No tasks found across all departments.</p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {Object.entries(departmentTaskCounts).map(([departmentName, count]) => (
-                <Card key={departmentName} className="flex flex-col justify-between h-full">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{departmentName}</CardTitle>
-                    <Briefcase className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{count} Tasks</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          <Card className="p-6 space-y-4 mt-12">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-3">
-                <FileText className="h-6 w-6 text-primary" />
-                Generate Task Report
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <label htmlFor="report-period" className="w-full sm:w-auto text-left sm:text-right">Report Period:</label>
-                <Select onValueChange={(value: "week" | "month") => setReportPeriod(value)} value={reportPeriod}>
-                  <SelectTrigger id="report-period" className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="week">Current Week</SelectItem>
-                    <SelectItem value="month">Current Month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <label htmlFor="department-filter" className="w-full sm:w-auto text-left sm:text-right">Filter by Department:</label>
-                <Select onValueChange={(value: string | "all") => setSelectedReportDepartment(value)} value={selectedReportDepartment}>
-                  <SelectTrigger id="department-filter" className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Departments</SelectItem>
-                    {loadingUsers ? (
-                      <SelectItem value="loading" disabled>Loading departments...</SelectItem>
-                    ) : (
-                      departments.map((dept) => (
-                        <SelectItem key={dept} value={dept}>
-                          {dept}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button onClick={generateReport} disabled={isGeneratingReport || loadingUsers} className="w-full sm:w-auto">
-                {isGeneratingReport ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Generate PDF Report
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+            <Button onClick={generateReport} disabled={isGeneratingReport || loadingUsers} className="w-full sm:w-auto">
+              {isGeneratingReport ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="mr-2 h-4 w-4" />
+                  Generate PDF Report
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-    </PageTransitionWrapper>
+    </div>
   );
 };
 
