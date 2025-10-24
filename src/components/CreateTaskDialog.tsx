@@ -116,9 +116,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <span>
-            <Plus className="mr-2 h-4 w-4" /> Create New Task
-          </span>
+          <Plus className="mr-2 h-4 w-4" /> Create New Task
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -240,10 +238,10 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
             />
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
-                <span>
+                <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
                   Creating...
-                </span>
+                </>
               ) : (
                 "Create Task"
               )}

@@ -17,7 +17,6 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import PasswordInput from "@/components/PasswordInput"; // Import the new component
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -87,7 +86,7 @@ const Login = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <PasswordInput placeholder="••••••••" {...field} /> {/* Use PasswordInput */}
+                    <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

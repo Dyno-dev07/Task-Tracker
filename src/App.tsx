@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SignUp from "./pages/SignUp";
@@ -18,39 +19,57 @@ import AdminRouteGuard from "./components/AdminRouteGuard";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import React from "react";
-// Removed AnimatePresence and motion imports for debugging
 
 const queryClient = new QueryClient();
 
-// Removed pageVariants as animations are temporarily disabled
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    x: "-100vw",
+  },
+  in: {
+    opacity: 1,
+    x: 0,
+  },
+  out: {
+    opacity: 0,
+    x: "100vw",
+  },
+};
+
+const pageTransition = {
+  type: "tween",
+  ease: "anticipate",
+  duration: 0.5,
+};
 
 const AppRoutes = () => {
-  // Removed useLocation as it's only needed for AnimatePresence
-  // const location = useLocation();
+  const location = useLocation();
 
   return (
-    // Removed AnimatePresence wrapper
-    <Routes> {/* Removed location and key props as they are for AnimatePresence */}
-      <Route path="/" element={<Index />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/update-password" element={<UpdatePassword />} />
-      {/* Protected routes */}
-      <Route element={<AuthLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tasks/all" element={<AllTasksPage />} />
-        <Route path="/tasks/:status" element={<TaskListPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        {/* Admin Routes protected by AdminRouteGuard */}
-        <Route element={<AdminRouteGuard />}>
-          <Route path="/admin/users-tasks" element={<UserTasksPage />} />
-          <Route path="/admin/task-summary" element={<TaskSummaryPage />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Index /></motion.div>} />
+        <Route path="/signup" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><SignUp /></motion.div>} />
+        <Route path="/login" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Login /></motion.div>} />
+        <Route path="/forgot-password" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><ForgotPassword /></motion.div>} />
+        <Route path="/update-password" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><UpdatePassword /></motion.div>} />
+        {/* Protected routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="/dashboard" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><Dashboard /></motion.div>} />
+          <Route path="/tasks/all" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><AllTasksPage /></motion.div>} />
+          <Route path="/tasks/:status" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><TaskListPage /></motion.div>} />
+          <Route path="/settings" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><SettingsPage /></motion.div>} />
+          {/* Admin Routes protected by AdminRouteGuard */}
+          <Route element={<AdminRouteGuard />}>
+            <Route path="/admin/users-tasks" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><UserTasksPage /></motion.div>} />
+            <Route path="/admin/task-summary" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><TaskSummaryPage /></motion.div>} />
+          </Route>
         </Route>
-      </Route>
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><NotFound /></motion.div>} />
+      </Routes>
+    </AnimatePresence>
   );
 };
 
