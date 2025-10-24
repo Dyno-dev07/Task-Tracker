@@ -116,7 +116,9 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2 h-4 w-4" /> Create New Task
+          <span>
+            <Plus className="mr-2 h-4 w-4" /> Create New Task
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

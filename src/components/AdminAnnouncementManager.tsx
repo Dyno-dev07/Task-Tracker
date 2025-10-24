@@ -133,8 +133,10 @@ const AdminAnnouncementManager: React.FC = () => {
   if (isLoading) {
     return (
       <Button variant="outline" disabled>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading...
+        <span>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Loading...
+        </span>
       </Button>
     );
   }
@@ -152,8 +154,10 @@ const AdminAnnouncementManager: React.FC = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
-          <Megaphone className="h-4 w-4" />
-          Manage Announcement
+          <span>
+            <Megaphone className="h-4 w-4" />
+            Manage Announcement
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

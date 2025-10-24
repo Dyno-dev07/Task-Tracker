@@ -60,16 +60,20 @@ const SidebarContent: React.FC<{ onLogout: () => void; closeSidebar?: () => void
                 !isDesktopSidebarOpen && "justify-center"
               )}
             >
-              <Icon className="h-4 w-4" />
-              {isDesktopSidebarOpen && <span>{item.name}</span>}
+              <span>
+                <Icon className="h-4 w-4" />
+                {isDesktopSidebarOpen && <span>{item.name}</span>}
+              </span>
             </Link>
           );
         })}
       </nav>
       <div className="mt-auto">
         <Button onClick={onLogout} className={cn("w-full flex items-center gap-3", !isDesktopSidebarOpen && "justify-center")}>
-          <LogOut className="h-4 w-4" />
-          {isDesktopSidebarOpen && <span>Logout</span>}
+          <span>
+            <LogOut className="h-4 w-4" />
+            {isDesktopSidebarOpen && <span>Logout</span>}
+          </span>
         </Button>
       </div>
     </div>
@@ -84,8 +88,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, isMobileSidebarOpen, setIsM
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 md:hidden">
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle sidebar</span>
+            <span>
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Toggle sidebar</span>
+            </span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
