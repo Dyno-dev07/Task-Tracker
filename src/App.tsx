@@ -56,15 +56,14 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      {/* Wrapped children in a <div> to ensure a single, concrete element child */}
-      <div>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-        <Toaster />
-        <Sonner />
-      </div>
+      {/* BrowserRouter is now the direct and only child of TooltipProvider */}
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </TooltipProvider>
+    {/* Toaster and Sonner are now siblings to the main application structure */}
+    <Toaster />
+    <Sonner />
   </QueryClientProvider>
 );
 
