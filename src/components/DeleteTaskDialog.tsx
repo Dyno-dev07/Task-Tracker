@@ -69,10 +69,10 @@ const DeleteTaskDialog: React.FC<DeleteTaskDialogProps> = ({ taskId, onTaskDelet
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-500 hover:bg-red-600">
             {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <span>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
                 Deleting...
-              </>
+              </span>
             ) : (
               "Delete"
             )}

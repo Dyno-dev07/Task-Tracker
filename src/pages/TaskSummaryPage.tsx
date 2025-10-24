@@ -332,15 +332,15 @@ const TaskSummaryPage: React.FC = () => {
 
             <Button onClick={generateReport} disabled={isGeneratingReport || loadingUsers} className="w-full sm:w-auto">
               {isGeneratingReport ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <span>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
                   Generating...
-                </>
+                </span>
               ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
+                <span>
+                  <Download className="mr-2 h-4 w-4 inline-block" />
                   Generate PDF Report
-                </>
+                </span>
               )}
             </Button>
           </CardContent>

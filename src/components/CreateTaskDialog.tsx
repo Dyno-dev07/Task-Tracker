@@ -238,10 +238,10 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
             />
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <span>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
                   Creating...
-                </>
+                </span>
               ) : (
                 "Create Task"
               )}
