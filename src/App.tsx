@@ -23,8 +23,6 @@ import React from "react";
 
 const queryClient = new QueryClient();
 
-// Removed AnimatedRoute component
-
 // New component to handle routes and AnimatePresence
 const AppRoutes = () => {
   const location = useLocation();
@@ -59,11 +57,14 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppRoutes /> {/* Render the new AppRoutes component */}
-      </BrowserRouter>
+      {/* Wrapped children in a React.Fragment */}
+      <>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes /> {/* Render the new AppRoutes component */}
+        </BrowserRouter>
+      </>
     </TooltipProvider>
   </QueryClientProvider>
 );
