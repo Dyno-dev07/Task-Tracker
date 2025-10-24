@@ -56,14 +56,14 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      {/* Wrapped children in a React.Fragment as specified */}
-      <>
+      {/* Wrapped children in a <div> to ensure a single, concrete element child */}
+      <div>
         <BrowserRouter>
           <AppRoutes />
         </BrowserRouter>
         <Toaster />
         <Sonner />
-      </>
+      </div>
     </TooltipProvider>
   </QueryClientProvider>
 );
