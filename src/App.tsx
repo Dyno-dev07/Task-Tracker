@@ -54,17 +54,18 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      {/* BrowserRouter is now the direct and only child of TooltipProvider */}
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </TooltipProvider>
+  <> {/* This fragment ensures App returns a single child to FontProvider */}
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
     {/* Toaster and Sonner are now siblings to the main application structure */}
     <Toaster />
     <Sonner />
-  </QueryClientProvider>
+  </>
 );
 
 export default App;
