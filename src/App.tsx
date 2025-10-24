@@ -16,6 +16,8 @@ import UserTasksPage from "./pages/UserTasksPage";
 import TaskSummaryPage from "./pages/TaskSummaryPage";
 import PageTransitionWrapper from "@/components/PageTransitionWrapper";
 import AdminRouteGuard from "./components/AdminRouteGuard";
+import ForgotPassword from "./pages/ForgotPassword"; // Import new page
+import UpdatePassword from "./pages/UpdatePassword"; // Import new page
 import { AnimatePresence } from "framer-motion";
 import React from "react";
 
@@ -42,6 +44,8 @@ const App = () => (
             <Route path="/" element={<AnimatedRoute><Index /></AnimatedRoute>} />
             <Route path="/signup" element={<AnimatedRoute><SignUp /></AnimatedRoute>} />
             <Route path="/login" element={<AnimatedRoute><Login /></AnimatedRoute>} />
+            <Route path="/forgot-password" element={<AnimatedRoute><ForgotPassword /></AnimatedRoute>} /> {/* New route */}
+            <Route path="/update-password" element={<AnimatedRoute><UpdatePassword /></AnimatedRoute>} /> {/* New route */}
             {/* Protected routes */}
             <Route element={<AuthLayout />}>
               <Route path="/dashboard" element={<AnimatedRoute><Dashboard /></AnimatedRoute>} />
