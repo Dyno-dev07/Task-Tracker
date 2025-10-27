@@ -15,7 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns"; // Removed startOfWeek, endOfWeek
 
 interface Task {
   id: string;
@@ -37,11 +37,12 @@ const UserTaskReportGenerator: React.FC = () => {
     try {
       let startDate: Date;
       let endDate: Date;
-      const now = new Date();
+      const now = new Date(); // Capture current date/time once
 
       if (reportPeriod === "week") {
-        startDate = startOfWeek(now, { weekStartsOn: 1 }); // Monday as start of week
-        endDate = endOfWeek(now, { weekStartsOn: 1 });
+        endDate = now; // Report ends today
+        startDate = new Date(now); // Create a new date object
+        startDate.setDate(now.getDate() - 6); // Subtract 6 days for a 7-day period
       } else { // month
         startDate = startOfMonth(now);
         endDate = endOfMonth(now);
@@ -119,7 +120,7 @@ const UserTaskReportGenerator: React.FC = () => {
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Current Week</SelectItem>
+              <SelectItem value="week">Current Week (Last 7 Days)</SelectItem>
               <SelectItem value="month">Current Month</SelectItem>
             </SelectContent>
           </Select>
