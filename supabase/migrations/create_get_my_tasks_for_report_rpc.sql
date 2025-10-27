@@ -18,13 +18,13 @@ DECLARE
 BEGIN
     RETURN QUERY
     SELECT
-        t.id,
-        t.title,
-        t.description,
-        t.status,
-        t.priority,
-        t.due_date,
-        t.created_at
+        t.id::UUID,
+        t.title::TEXT,
+        t.description::TEXT,
+        t.status::TEXT,
+        t.priority::TEXT,
+        t.due_date::TIMESTAMPTZ,
+        t.created_at::TIMESTAMPTZ
     FROM
         tasks t
     WHERE
