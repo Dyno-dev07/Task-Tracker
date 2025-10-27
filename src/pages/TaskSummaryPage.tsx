@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { format, startOfMonth, endOfMonth } from "date-fns"; // Removed startOfWeek, endOfWeek
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import {
   Accordion,
   AccordionContent,
@@ -143,12 +143,23 @@ const TaskSummaryPage: React.FC = () => {
     try {
       let startDate: Date;
       let endDate: Date;
-      const now = new Date(); // Capture current date/time once
+      const now = new Date();
 
       if (reportPeriod === "week") {
-        endDate = now; // Report ends today
-        startDate = new Date(now); // Create a new date object
-        startDate.setDate(now.getDate() - 6); // Subtract 6 days for a 7-day period
+        // Calculate the start of the current Friday-to-Thursday week
+        const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+        const fridayDay = 5; // Friday is 5
+
+        // Calculate days to subtract to get to the most recent Friday
+        const daysToSubtract = (currentDay + 7 - fridayDay) % 7;
+
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - daysToSubtract);
+        startDate.setHours(0, 0, 0, 0); // Set to start of the day
+
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6); // 6 days after Friday is Thursday
+        endDate.setHours(23, 59, 59, 999); // Set to end of the day
       } else { // month
         startDate = startOfMonth(now);
         endDate = endOfMonth(now);
@@ -304,7 +315,7 @@ const TaskSummaryPage: React.FC = () => {
                   <SelectValue placeholder="Select period" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="week">Current Week (Last 7 Days)</SelectItem>
+                  <SelectItem value="week">Current Week (Fri-Thu)</SelectItem>
                   <SelectItem value="month">Current Month</SelectItem>
                 </SelectContent>
               </Select>
