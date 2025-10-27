@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import FontSelector from "@/components/FontSelector";
 import { Settings as SettingsIcon } from "lucide-react";
+import UserTaskReportGenerator from "@/components/UserTaskReportGenerator"; // Import the new component
 
 const SettingsPage: React.FC = () => {
   return (
@@ -33,6 +34,9 @@ const SettingsPage: React.FC = () => {
             <FontSelector />
           </CardContent>
         </Card>
+
+        {/* New section for User Task Report */}
+        <UserTaskReportGenerator />
 
         {/* Future customization options can be added here */}
       </div>
