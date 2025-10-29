@@ -222,15 +222,15 @@ const AllTasksPage: React.FC = () => {
               <motion.div key={task.id} variants={itemVariants}>
                 <Card className="flex flex-col justify-between h-full relative">
                   <CardHeader className="pb-2">
-                    <div className="flex items-center justify-center w-full relative">
-                      <CardTitle className="text-center flex-grow">{task.title}</CardTitle>
-                      <div className="flex items-center gap-1 absolute right-0 top-0">
+                    <div className="flex justify-end w-full mb-2"> {/* Container for icons, aligned right */}
+                      <div className="flex items-center gap-1">
                         {task.remarks && (
                           <MessageSquare className="h-4 w-4 text-blue-500 dark:text-blue-400" title="Remarks exist" />
                         )}
                         <TaskDetailsDialog task={task} onTaskUpdated={refetchAllTasks} />
                       </div>
                     </div>
+                    <CardTitle className="text-center">{task.title}</CardTitle> {/* Centered title */}
                     <CardDescription className="flex items-center gap-2 mt-2">
                       <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                       <Badge variant="outline">{task.status}</Badge>
