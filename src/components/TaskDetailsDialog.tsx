@@ -128,7 +128,7 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({ task, onTaskUpdat
             View full task information and add your remarks.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4 -mr-4 min-h-0"> {/* Added min-h-0 */}
+        <ScrollArea className="flex-1 min-h-0"> {/* Removed pr-4 -mr-4 */}
           <div className="space-y-4 py-2">
             <div>
               <h3 className="font-semibold text-sm mb-1">Title</h3>
