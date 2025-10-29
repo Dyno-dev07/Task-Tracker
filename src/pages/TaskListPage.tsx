@@ -210,9 +210,9 @@ const TaskListPage: React.FC = () => {
               <motion.div key={task.id} variants={itemVariants}>
                 <Card className="flex flex-col justify-between h-full relative">
                   <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle>{task.title}</CardTitle>
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-center w-full relative">
+                      <CardTitle className="text-center flex-grow">{task.title}</CardTitle>
+                      <div className="flex items-center gap-1 absolute right-0 top-0">
                         {task.remarks && (
                           <MessageSquare className="h-4 w-4 text-blue-500 dark:text-blue-400" title="Remarks exist" />
                         )}
