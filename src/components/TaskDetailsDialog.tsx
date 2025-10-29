@@ -22,12 +22,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Info, MessageSquare } from "lucide-react"; // Changed Eye to Info
+import { Loader2, Info, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area"; // Ensure ScrollArea is imported
 
 const formSchema = z.object({
   remarks: z.string().max(1000, { message: "Remarks must not exceed 1000 characters." }).optional().nullable(),
@@ -117,7 +117,7 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({ task, onTaskUpdat
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-          <Info className="h-4 w-4" /> {/* Changed to Info icon */}
+          <Info className="h-4 w-4" />
           <span className="sr-only">View task details</span>
         </Button>
       </DialogTrigger>
