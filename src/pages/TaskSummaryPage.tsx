@@ -48,6 +48,7 @@ interface TaskWithProfile {
   user_id: string;
   first_name: string;
   department: string;
+  remarks: string | null; // Added remarks field
 }
 
 interface UserProfile {
@@ -190,7 +191,7 @@ const TaskSummaryPage: React.FC = () => {
       yPos += 15;
 
       // Updated table columns to include Description and Created At
-      const tableColumn = ["User", "Department", "Title", "Description", "Status", "Priority", "Due Date", "Created At"];
+      const tableColumn = ["User", "Department", "Title", "Description", "Status", "Priority", "Due Date", "Created At", "Remarks"];
       const tableRows: any[] = [];
 
       tasks?.forEach((task: TaskWithProfile) => {
@@ -203,6 +204,7 @@ const TaskSummaryPage: React.FC = () => {
           task.priority,
           task.due_date ? format(new Date(task.due_date), "PPP") : "N/A",
           format(new Date(task.created_at), "PPP"), // Added created_at
+          task.remarks || "N/A", // Added remarks
         ];
         tableRows.push(taskData);
       });
@@ -233,6 +235,9 @@ const TaskSummaryPage: React.FC = () => {
   const handleTaskChange = () => {
     queryClient.invalidateQueries({ queryKey: ['allTasksWithProfiles'] });
     queryClient.invalidateQueries({ queryKey: ['allTasksSummaryCounts'] });
+    queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate general tasks query (for other pages)
+    queryClient.invalidateQueries({ queryKey: ['overallTasksStats'] }); // Invalidate overall stats
+    queryClient.invalidateQueries({ queryKey: ['filteredTasks'] }); // Invalidate filtered tasks
   };
 
   return (

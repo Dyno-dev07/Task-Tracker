@@ -9,7 +9,8 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 import EditTaskDialog from "./EditTaskDialog";
 import DeleteTaskDialog from "./DeleteTaskDialog";
-import { CheckCircle, PlayCircle, Loader2 } from "lucide-react";
+import TaskDetailsDialog from "./TaskDetailsDialog"; // Import new component
+import { CheckCircle, PlayCircle, Loader2, MessageSquare } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
@@ -22,6 +23,7 @@ interface Task {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   created_at: string;
+  remarks: string | null; // Added remarks field
 }
 
 interface LatestTasksSectionProps {
@@ -90,6 +92,12 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
     }
   };
 
+  const truncateDescription = (description: string | null, limit: number) => {
+    if (!description) return null;
+    if (description.length <= limit) return description;
+    return description.substring(0, limit) + "...";
+  };
+
   return (
     <div className="w-full max-w-6xl space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">Latest Tasks</h2>
@@ -104,16 +112,28 @@ const LatestTasksSection: React.FC<LatestTasksSectionProps> = ({ tasks, totalTas
         >
           {tasks.map((task) => (
             <motion.div key={task.id} variants={itemVariants}>
-              <Card className="flex flex-col justify-between h-full">
-                <CardHeader>
-                  <CardTitle>{task.title}</CardTitle>
+              <Card className="flex flex-col justify-between h-full relative">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <CardTitle>{task.title}</CardTitle>
+                    <div className="flex items-center gap-1">
+                      {task.remarks && (
+                        <MessageSquare className="h-4 w-4 text-blue-500 dark:text-blue-400" title="Remarks exist" />
+                      )}
+                      <TaskDetailsDialog task={task} onTaskUpdated={onTaskChange} />
+                    </div>
+                  </div>
                   <CardDescription className="flex items-center gap-2 mt-2">
                     <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                     <Badge variant="outline">{task.status}</Badge>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
+                  {task.description && (
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      {truncateDescription(task.description, 200)}
+                    </p>
+                  )}
                   {task.due_date && (
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       Due: {format(new Date(task.due_date), "PPP")}

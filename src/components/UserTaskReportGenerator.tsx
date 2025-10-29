@@ -25,6 +25,7 @@ interface Task {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   created_at: string;
+  remarks: string | null; // Added remarks field
 }
 
 const UserTaskReportGenerator: React.FC = () => {
@@ -79,7 +80,7 @@ const UserTaskReportGenerator: React.FC = () => {
       doc.text(`Period: ${format(startDate, "PPP")} - ${format(endDate, "PPP")}`, 14, yPos);
       yPos += 15;
 
-      const tableColumn = ["Title", "Description", "Status", "Priority", "Due Date", "Created At"];
+      const tableColumn = ["Title", "Description", "Status", "Priority", "Due Date", "Created At", "Remarks"];
       const tableRows: any[] = [];
 
       tasks?.forEach((task: Task) => {
@@ -90,6 +91,7 @@ const UserTaskReportGenerator: React.FC = () => {
           task.priority,
           task.due_date ? format(new Date(task.due_date), "PPP") : "N/A",
           format(new Date(task.created_at), "PPP"),
+          task.remarks || "N/A", // Added remarks
         ];
         tableRows.push(taskData);
       });

@@ -48,6 +48,7 @@ const formSchema = z.object({
     required_error: "Please select a priority.",
   }),
   due_date: z.date().optional().nullable(),
+  remarks: z.string().max(1000, { message: "Remarks must not exceed 1000 characters." }).optional().nullable(), // Added remarks field
 });
 
 interface Task {
@@ -58,6 +59,7 @@ interface Task {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   created_at: string;
+  remarks: string | null; // Added remarks field
 }
 
 interface EditTaskDialogProps {
@@ -78,6 +80,7 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({ task, onTaskUpdated }) 
       status: task.status,
       priority: task.priority,
       due_date: task.due_date ? new Date(task.due_date) : undefined,
+      remarks: task.remarks, // Set default value for remarks
     },
   });
 
@@ -90,6 +93,7 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({ task, onTaskUpdated }) 
         status: task.status,
         priority: task.priority,
         due_date: task.due_date ? new Date(task.due_date) : undefined,
+        remarks: task.remarks,
       });
     }
   }, [open, task, form]);
@@ -105,6 +109,7 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({ task, onTaskUpdated }) 
           status: values.status,
           priority: values.priority,
           due_date: values.due_date ? values.due_date.toISOString() : null,
+          remarks: values.remarks, // Update remarks
         })
         .eq("id", task.id);
 
@@ -248,6 +253,19 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({ task, onTaskUpdated }) 
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="remarks"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Remarks (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Add remarks for this task" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

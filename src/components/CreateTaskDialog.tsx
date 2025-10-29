@@ -49,6 +49,7 @@ const formSchema = z.object({
     required_error: "Please select a priority.",
   }),
   due_date: z.date().optional().nullable(),
+  remarks: z.string().max(1000, { message: "Remarks must not exceed 1000 characters." }).optional().nullable(), // Added remarks field
 });
 
 interface CreateTaskDialogProps {
@@ -69,6 +70,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
       status: "pending",
       priority: "medium",
       due_date: undefined,
+      remarks: "", // Default empty remarks
     },
   });
 
@@ -88,6 +90,7 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
         status: values.status,
         priority: values.priority,
         due_date: values.due_date ? values.due_date.toISOString() : null,
+        remarks: values.remarks, // Insert remarks
       });
 
       if (error) throw error;
@@ -232,6 +235,19 @@ const CreateTaskDialog: React.FC<CreateTaskDialogProps> = () => { // Removed onT
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="remarks"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Remarks (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Add any initial remarks for this task" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

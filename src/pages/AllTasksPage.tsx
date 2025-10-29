@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, CalendarIcon } from "lucide-react";
+import { Loader2, ArrowLeft, CalendarIcon, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import EditTaskDialog from "@/components/EditTaskDialog";
 import DeleteTaskDialog from "@/components/DeleteTaskDialog";
+import TaskDetailsDialog from "@/components/TaskDetailsDialog"; // Import new component
 import { useQuery, useQueryClient } from "@tanstack/react-query"; // Import useQuery and useQueryClient
 
 interface Task {
@@ -32,6 +33,7 @@ interface Task {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   created_at: string;
+  remarks: string | null; // Added remarks field
 }
 
 // Variants for the cascading animation
@@ -124,6 +126,8 @@ const AllTasksPage: React.FC = () => {
         description: `Task moved to ${newStatus}.`,
       });
       queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate tasks query to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ['overallTasksStats'] }); // Invalidate overall stats
+      queryClient.invalidateQueries({ queryKey: ['filteredTasks'] }); // Invalidate filtered tasks
     } catch (error: any) {
       toast({
         title: "Failed to update task status",
@@ -131,6 +135,12 @@ const AllTasksPage: React.FC = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const truncateDescription = (description: string | null, limit: number) => {
+    if (!description) return null;
+    if (description.length <= limit) return description;
+    return description.substring(0, limit) + "...";
   };
 
   return (
@@ -210,16 +220,28 @@ const AllTasksPage: React.FC = () => {
           >
             {tasks.map((task) => (
               <motion.div key={task.id} variants={itemVariants}>
-                <Card className="flex flex-col justify-between">
-                  <CardHeader>
-                    <CardTitle>{task.title}</CardTitle>
+                <Card className="flex flex-col justify-between h-full relative">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{task.title}</CardTitle>
+                      <div className="flex items-center gap-1">
+                        {task.remarks && (
+                          <MessageSquare className="h-4 w-4 text-blue-500 dark:text-blue-400" title="Remarks exist" />
+                        )}
+                        <TaskDetailsDialog task={task} onTaskUpdated={refetchAllTasks} />
+                      </div>
+                    </div>
                     <CardDescription className="flex items-center gap-2 mt-2">
                       <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
                       <Badge variant="outline">{task.status}</Badge>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {task.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{task.description}</p>}
+                    {task.description && (
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                        {truncateDescription(task.description, 200)}
+                      </p>
+                    )}
                     {task.due_date && (
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         Due: {format(new Date(task.due_date), "PPP")}

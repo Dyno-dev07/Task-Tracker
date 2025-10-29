@@ -33,6 +33,7 @@ interface Task {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   created_at: string;
+  remarks: string | null; // New field
 }
 
 interface AuthLayoutContext {
@@ -165,6 +166,7 @@ const Dashboard = () => {
   const handleTaskChange = () => {
     queryClient.invalidateQueries({ queryKey: ['overallTasksStats'] });
     queryClient.invalidateQueries({ queryKey: ['filteredTasks'] });
+    queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate general tasks query (for other pages)
   };
 
   return (
