@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area"; // Ensure ScrollArea is imported
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formSchema = z.object({
   remarks: z.string().max(1000, { message: "Remarks must not exceed 1000 characters." }).optional().nullable(),
@@ -122,13 +122,13 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({ task, onTaskUpdat
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0"> {/* Added flex-shrink-0 */}
           <DialogTitle>Task Details: {task.title}</DialogTitle>
           <DialogDescription>
             View full task information and add your remarks.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4 -mr-4"> {/* Added ScrollArea for content */}
+        <ScrollArea className="flex-1 h-full pr-4 -mr-4"> {/* Added h-full */}
           <div className="space-y-4 py-2">
             <div>
               <h3 className="font-semibold text-sm mb-1">Title</h3>
