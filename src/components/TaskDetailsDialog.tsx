@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// import { ScrollArea } from "@/components/ui/scroll-area"; // Removed ScrollArea
 
 const formSchema = z.object({
   remarks: z.string().max(1000, { message: "Remarks must not exceed 1000 characters." }).optional().nullable(),
@@ -121,7 +121,7 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({ task, onTaskUpdat
           <span className="sr-only">View task details</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] max-h-[90vh] flex flex-col overflow-hidden"> {/* Added overflow-hidden */}
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto"> {/* Applied overflow-y-auto directly */}
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Task Details: {task.title}</DialogTitle>
           <DialogDescription>
@@ -129,98 +129,94 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({ task, onTaskUpdat
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0"> {/* Ensures ScrollArea gets a fixed height context */}
-          <ScrollArea className="h-full"> {/* Set h-full here */}
-            <div className="space-y-4 py-2 pr-4"> {/* Added pr-4 for scrollbar */}
-              <div>
-                <h3 className="font-semibold text-sm mb-1">Title</h3>
-                <p className="text-sm text-gray-700 dark:text-gray-300">{task.title}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm mb-1">Description</h3>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  {task.description || "No description provided."}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div>
-                  <h3 className="font-semibold text-sm mb-1">Status</h3>
-                  <Badge variant="outline">{task.status}</Badge>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm mb-1">Priority</h3>
-                  <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
-                </div>
-              </div>
-              {task.due_date && (
-                <div>
-                  <h3 className="font-semibold text-sm mb-1">Due Date</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {format(new Date(task.due_date), "PPP")}
-                  </p>
-                </div>
-              )}
-              <div>
-                <h3 className="font-semibold text-sm mb-1">Created At</h3>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  {format(new Date(task.created_at), "PPP")}
-                </p>
-              </div>
-              {task.first_name && (
-                <div>
-                  <h3 className="font-semibold text-sm mb-1">Assigned User</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{task.first_name}</p>
-                </div>
-              )}
-              {task.department && (
-                <div>
-                  <h3 className="font-semibold text-sm mb-1">Department</h3>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{task.department}</p>
-                </div>
-              )}
-
-              {/* Temporary long content to force scrolling */}
-              <div className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-                <p>This is a temporary long paragraph to test scrolling functionality. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Another paragraph to ensure sufficient content. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>And one more for good measure. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Final paragraph to really push it. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-              </div>
-              {/* End temporary long content */}
-
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-                  <FormField
-                    control={form.control}
-                    name="remarks"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Remarks (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Add your remarks here..."
-                            className="resize-y min-h-[80px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <span>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
-                        Saving Remarks...
-                      </span>
-                    ) : (
-                      "Save Remarks"
-                    )}
-                  </Button>
-                </form>
-              </Form>
+        <div className="space-y-4 py-2"> {/* Content directly inside DialogContent */}
+          <div>
+            <h3 className="font-semibold text-sm mb-1">Title</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{task.title}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm mb-1">Description</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {task.description || "No description provided."}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Status</h3>
+              <Badge variant="outline">{task.status}</Badge>
             </div>
-          </ScrollArea>
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Priority</h3>
+              <Badge variant={getPriorityBadgeVariant(task.priority)}>{task.priority}</Badge>
+            </div>
+          </div>
+          {task.due_date && (
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Due Date</h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {format(new Date(task.due_date), "PPP")}
+              </p>
+            </div>
+          )}
+          <div>
+            <h3 className="font-semibold text-sm mb-1">Created At</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              {format(new Date(task.created_at), "PPP")}
+            </p>
+          </div>
+          {task.first_name && (
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Assigned User</h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{task.first_name}</p>
+            </div>
+          )}
+          {task.department && (
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Department</h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{task.department}</p>
+            </div>
+          )}
+
+          {/* Temporary long content to force scrolling */}
+          <div className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+            <p>This is a temporary long paragraph to test scrolling functionality. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Another paragraph to ensure sufficient content. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>And one more for good measure. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Final paragraph to really push it. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+          </div>
+          {/* End temporary long content */}
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+              <FormField
+                control={form.control}
+                name="remarks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Remarks (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Add your remarks here..."
+                        className="resize-y min-h-[80px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <span>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
+                    Saving Remarks...
+                  </span>
+                ) : (
+                  "Save Remarks"
+                )}
+              </Button>
+            </form>
+          </Form>
         </div>
       </DialogContent>
     </Dialog>
