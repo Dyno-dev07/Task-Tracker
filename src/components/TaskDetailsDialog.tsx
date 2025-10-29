@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Eye, MessageSquare } from "lucide-react";
+import { Loader2, Info, MessageSquare } from "lucide-react"; // Changed Eye to Info
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -117,7 +117,7 @@ const TaskDetailsDialog: React.FC<TaskDetailsDialogProps> = ({ task, onTaskUpdat
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-          <Eye className="h-4 w-4" />
+          <Info className="h-4 w-4" /> {/* Changed to Info icon */}
           <span className="sr-only">View task details</span>
         </Button>
       </DialogTrigger>
