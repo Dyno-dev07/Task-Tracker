@@ -62,8 +62,8 @@ BEGIN
         (user_id_filter IS NULL OR t.user_id = user_id_filter)
         AND (start_date_iso IS NULL OR t.created_at >= _start_date)
         AND (end_date_iso IS NULL OR t.created_at <= _end_date)
-        AND (priority_filter IS NULL OR t.priority = priority_filter::public.tasks_priority) -- Explicit cast here
-        AND (status_filter IS NULL OR t.status = status_filter::public.tasks_status)       -- Explicit cast here
+        AND (priority_filter IS NULL OR t.priority = priority_filter::public.priority_enum) -- Corrected cast
+        AND (status_filter IS NULL OR t.status = status_filter::public.status_enum)       -- Corrected cast
         AND (department_name IS NULL OR p.department = department_name);
 END;
 $$;
