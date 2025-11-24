@@ -19,7 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useQuery, useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import GlobalAnnouncementDisplay from "@/components/GlobalAnnouncementDisplay";
 import AdminAnnouncementManager from "@/components/AdminAnnouncementManager";
 
@@ -44,6 +44,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null); // State to store current user's ID
   const [greeting, setGreeting] = useState<string>("");
   const [loadingProfile, setLoadingProfile] = useState(true);
   const { userRole } = useOutletContext<AuthLayoutContext>();
@@ -53,15 +54,53 @@ const Dashboard = () => {
   const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
 
-  const queryClient = useQueryClient(); // Initialize useQueryClient
+  const queryClient = useQueryClient();
+
+  const fetchUserProfile = useCallback(async () => {
+    setLoadingProfile(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      setCurrentUserId(user.id); // Set the current user's ID
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("first_name")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        setUserFirstName(null);
+      } else if (profileData) {
+        setUserFirstName(profileData.first_name);
+      }
+    } else {
+      setCurrentUserId(null); // Clear user ID if no user
+    }
+    setLoadingProfile(false);
+  }, []);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, [fetchUserProfile]);
+
+  useEffect(() => {
+    if (userFirstName) {
+      setGreeting(`Welcome to your tasks, ${userFirstName}!`);
+    } else {
+      setGreeting("Welcome to Your Dashboard!");
+    }
+  }, [userFirstName]);
 
   // Query for overall, unfiltered task counts for DashboardStats
   const { data: overallTasks = [], isLoading: loadingOverallTasks } = useQuery<Task[]>({
-    queryKey: ['overallTasksStats'],
+    queryKey: ['overallTasksStats', currentUserId], // Add currentUserId to query key
     queryFn: async () => {
+      if (!currentUserId) return []; // Don't fetch if user ID is not available
       const { data, error } = await supabase
         .from("tasks")
-        .select("*"); // No filters here
+        .select("*")
+        .eq("user_id", currentUserId); // Filter by current user's ID
       if (error) {
         toast({
           title: "Error fetching overall tasks",
@@ -72,15 +111,18 @@ const Dashboard = () => {
       }
       return data as Task[];
     },
+    enabled: !!currentUserId, // Only run when currentUserId is available
   });
 
   // Query for filtered tasks (for LatestTasksSection)
   const { data: filteredTasksForList = [], isLoading: loadingFilteredTasks } = useQuery<Task[]>({
-    queryKey: ['filteredTasks', { date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus }],
+    queryKey: ['filteredTasks', { userId: currentUserId, date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus }], // Add currentUserId to query key
     queryFn: async () => {
+      if (!currentUserId) return []; // Don't fetch if user ID is not available
       let query = supabase
         .from("tasks")
         .select("*")
+        .eq("user_id", currentUserId) // Filter by current user's ID
         .order("created_at", { ascending: false });
 
       if (selectedDate) {
@@ -114,40 +156,10 @@ const Dashboard = () => {
       }
       return data as Task[];
     },
+    enabled: !!currentUserId, // Only run when currentUserId is available
   });
 
-  const fetchUserProfile = useCallback(async () => {
-    setLoadingProfile(true);
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (user) {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("first_name")
-        .eq("id", user.id)
-        .single();
-
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        setUserFirstName(null);
-      } else if (profileData) {
-        setUserFirstName(profileData.first_name);
-      }
-    }
-    setLoadingProfile(false);
-  }, []);
-
-  useEffect(() => {
-    fetchUserProfile();
-  }, [fetchUserProfile]);
-
-  useEffect(() => {
-    if (userFirstName) {
-      setGreeting(`Welcome to your tasks, ${userFirstName}!`);
-    } else {
-      setGreeting("Welcome to Your Dashboard!");
-    }
-  }, [userFirstName]);
+  const isLoading = loadingProfile || loadingOverallTasks || loadingFilteredTasks;
 
   // Calculate stats from overallTasks (unfiltered)
   const totalOverallTasks = overallTasks.length;
@@ -160,12 +172,10 @@ const Dashboard = () => {
     return filteredTasksForList.slice(0, 10); // Always show max 10 filtered tasks
   }, [filteredTasksForList]);
 
-  const isLoading = loadingProfile || loadingOverallTasks || loadingFilteredTasks;
-
   // Callback to refetch both overall and filtered tasks when a task changes (create/edit/delete)
   const handleTaskChange = () => {
-    queryClient.invalidateQueries({ queryKey: ['overallTasksStats'] });
-    queryClient.invalidateQueries({ queryKey: ['filteredTasks'] });
+    queryClient.invalidateQueries({ queryKey: ['overallTasksStats', currentUserId] }); // Invalidate with user ID
+    queryClient.invalidateQueries({ queryKey: ['filteredTasks', { userId: currentUserId, date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus }] }); // Invalidate with user ID and filters
     queryClient.invalidateQueries({ queryKey: ['tasks'] }); // Invalidate general tasks query (for other pages)
   };
 
