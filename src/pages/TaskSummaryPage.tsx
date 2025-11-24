@@ -109,12 +109,12 @@ const TaskSummaryPage: React.FC = () => {
     queryKey: ['allTasksWithProfiles'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_all_tasks_with_profiles', {
-        user_id_filter: null,
+        user_id_filter: null, // Consistent order
         start_date_iso: null,
         end_date_iso: null,
         priority_filter: null,
         status_filter: null,
-        department_name: null, // Fetch all departments initially
+        department_name: null, // Consistent order
       });
 
       if (error) {
@@ -167,12 +167,12 @@ const TaskSummaryPage: React.FC = () => {
       }
 
       const { data: tasks, error } = await supabase.rpc('get_all_tasks_with_profiles', {
+        user_id_filter: null, // Consistent order
         start_date_iso: startDate.toISOString(),
         end_date_iso: endDate.toISOString(),
-        department_name: selectedReportDepartment === "all" ? null : selectedReportDepartment,
-        user_id_filter: null,
         priority_filter: null,
         status_filter: null,
+        department_name: selectedReportDepartment === "all" ? null : selectedReportDepartment, // Consistent order
       });
 
       if (error) throw error;
