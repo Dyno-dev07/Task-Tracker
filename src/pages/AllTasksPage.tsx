@@ -36,6 +36,8 @@ interface Task {
   remarks: string | null; // Added remarks field
 }
 
+const TASKS_PER_PAGE = 9; // Display 9 tasks per page
+
 // Variants for the cascading animation
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -56,11 +58,13 @@ const AllTasksPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalTasksCount, setTotalTasksCount] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient(); // Initialize useQueryClient
 
   const fetchTasks = useCallback(async () => {
-    let query = supabase.from("tasks").select("*").order("created_at", { ascending: false });
+    let query = supabase.from("tasks").select("*", { count: 'exact' }).order("created_at", { ascending: false });
 
     if (selectedDate) {
       // Set start and end of the selected day in local time, then convert to ISO string (which is UTC)
@@ -81,7 +85,12 @@ const AllTasksPage: React.FC = () => {
       query = query.eq("status", selectedStatus);
     }
 
-    const { data, error } = await query;
+    // Apply pagination
+    const from = (currentPage - 1) * TASKS_PER_PAGE;
+    const to = from + TASKS_PER_PAGE - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
 
     if (error) {
       toast({
@@ -91,11 +100,12 @@ const AllTasksPage: React.FC = () => {
       });
       throw error;
     }
+    setTotalTasksCount(count || 0);
     return data as Task[];
-  }, [toast, selectedDate, selectedPriority, selectedStatus]);
+  }, [toast, selectedDate, selectedPriority, selectedStatus, currentPage]);
 
   const { data: tasks = [], isLoading: loading, refetch: refetchAllTasks } = useQuery<Task[]>({
-    queryKey: ['tasks', { date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus }],
+    queryKey: ['tasks', { date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus, currentPage }],
     queryFn: fetchTasks,
   });
 
@@ -142,6 +152,21 @@ const AllTasksPage: React.FC = () => {
     if (description.length <= limit) return description;
     return description.substring(0, limit) + "...";
   };
+
+  const totalPages = Math.ceil(totalTasksCount / TASKS_PER_PAGE);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedDate, selectedPriority, selectedStatus]);
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -279,6 +304,29 @@ const AllTasksPage: React.FC = () => {
               </motion.div>
             ))}
           </motion.div>
+        )}
+
+        {/* Pagination Controls */}
+        {tasks.length > 0 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1 || loading}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages || loading}
+            >
+              Next
+            </Button>
+          </div>
         )}
       </div>
     </div>

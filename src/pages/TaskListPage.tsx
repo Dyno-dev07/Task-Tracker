@@ -29,6 +29,8 @@ interface Task {
   remarks: string | null; // Added remarks field
 }
 
+const TASKS_PER_PAGE = 9; // Display 9 tasks per page
+
 // Variants for the cascading animation
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -50,6 +52,8 @@ const TaskListPage: React.FC = () => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalTasksCount, setTotalTasksCount] = useState(0);
   const queryClient = useQueryClient(); // Initialize useQueryClient
 
   const fetchTasks = useCallback(async () => {
@@ -57,7 +61,7 @@ const TaskListPage: React.FC = () => {
 
     let query = supabase
       .from("tasks")
-      .select("*")
+      .select("*", { count: 'exact' }) // Request exact count
       .eq("status", status)
       .order("created_at", { ascending: false });
 
@@ -74,7 +78,12 @@ const TaskListPage: React.FC = () => {
       query = query.gte("created_at", startOfDayUTC).lte("created_at", endOfDayUTC);
     }
 
-    const { data, error } = await query;
+    // Apply pagination
+    const from = (currentPage - 1) * TASKS_PER_PAGE;
+    const to = from + TASKS_PER_PAGE - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
 
     if (error) {
       toast({
@@ -84,11 +93,12 @@ const TaskListPage: React.FC = () => {
       });
       throw error;
     }
+    setTotalTasksCount(count || 0);
     return data as Task[];
-  }, [status, toast, selectedDate]);
+  }, [status, toast, selectedDate, currentPage]);
 
   const { data: tasks = [], isLoading: loading, refetch: refetchTasksByStatus } = useQuery<Task[]>({
-    queryKey: ['tasks', status, { date: selectedDate?.toISOString() }],
+    queryKey: ['tasks', status, { date: selectedDate?.toISOString(), currentPage }],
     queryFn: fetchTasks,
     enabled: !!status, // Only run query if status is defined
   });
@@ -152,6 +162,21 @@ const TaskListPage: React.FC = () => {
     if (description.length <= limit) return description;
     return description.substring(0, limit) + "...";
   };
+
+  const totalPages = Math.ceil(totalTasksCount / TASKS_PER_PAGE);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  // Reset to first page when filters or status change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedDate, status]);
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -277,6 +302,29 @@ const TaskListPage: React.FC = () => {
               </motion.div>
             ))}
           </motion.div>
+        )}
+
+        {/* Pagination Controls */}
+        {tasks.length > 0 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1 || loading}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages || loading}
+            >
+              Next
+            </Button>
+          </div>
         )}
       </div>
     </div>
