@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import EditTaskDialog from "@/components/EditTaskDialog";
 import DeleteTaskDialog from "@/components/DeleteTaskDialog";
-import TaskDetailsDialog from "@/components/TaskDetailsDialog"; // Import new component
+import TaskDetailsDialog from "@/components/TaskDetailsDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Task {
@@ -33,15 +33,21 @@ interface Task {
   due_date: string | null;
   created_at: string;
   user_id: string;
-  remarks: string | null; // Added remarks field
-  first_name?: string; // Added for RPC return
-  department?: string; // Added for RPC return
+  remarks: string | null;
+  first_name: string; // No longer optional, will be flattened
+  department: string; // No longer optional, will be flattened
+  profiles?: { // Keep optional for the raw supabase response before flattening
+    first_name: string;
+    department: string;
+  };
 }
 
 interface UserProfile {
   id: string;
   first_name: string;
 }
+
+const TASKS_PER_PAGE = 9; // Display 9 tasks per page
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -63,6 +69,8 @@ const UserTasksPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedPriority, setSelectedPriority] = useState<"all" | "low" | "medium" | "high">("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "pending" | "in-progress" | "completed">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalTasksCount, setTotalTasksCount] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -85,28 +93,41 @@ const UserTasksPage: React.FC = () => {
     },
   });
 
-  // Fetch tasks based on filters and selected user using the RPC function
+  // Fetch tasks based on filters and selected user
   const fetchTasks = useCallback(async () => {
-    let startDateISO = null;
-    let endDateISO = null;
+    let query = supabase
+      .from("tasks")
+      .select("*, profiles(first_name, department)", { count: 'exact' }) // Request exact count
+      .order("created_at", { ascending: false });
 
+    // Apply filters
+    if (selectedUserId !== "all") {
+      query = query.eq("user_id", selectedUserId);
+    }
     if (selectedDate) {
       const startOfDayLocal = new Date(selectedDate);
       startOfDayLocal.setHours(0, 0, 0, 0);
-      startDateISO = startOfDayLocal.toISOString();
+      const startOfDayUTC = startOfDayLocal.toISOString();
 
       const endOfDayLocal = new Date(selectedDate);
       endOfDayLocal.setHours(23, 59, 59, 999);
-      endDateISO = endOfDayLocal.toISOString();
+      const endOfDayUTC = endOfDayLocal.toISOString();
+
+      query = query.gte("created_at", startOfDayUTC).lte("created_at", endOfDayUTC);
+    }
+    if (selectedPriority !== "all") {
+      query = query.eq("priority", selectedPriority);
+    }
+    if (selectedStatus !== "all") {
+      query = query.eq("status", selectedStatus);
     }
 
-    const { data, error } = await supabase.rpc('get_all_tasks_with_profiles', {
-      user_id_filter: selectedUserId === "all" ? null : selectedUserId,
-      start_date_iso: startDateISO,
-      end_date_iso: endDateISO,
-      priority_filter: selectedPriority === "all" ? null : selectedPriority,
-      status_filter: selectedStatus === "all" ? null : selectedStatus,
-    });
+    // Apply pagination
+    const from = (currentPage - 1) * TASKS_PER_PAGE;
+    const to = from + TASKS_PER_PAGE - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
 
     if (error) {
       toast({
@@ -116,11 +137,21 @@ const UserTasksPage: React.FC = () => {
       });
       throw error;
     }
-    return data as Task[];
-  }, [toast, selectedUserId, selectedDate, selectedPriority, selectedStatus]);
+
+    setTotalTasksCount(count || 0); // Set total count
+
+    // Flatten the data structure
+    const flattenedData = data?.map(task => ({
+      ...task,
+      first_name: task.profiles?.first_name || "N/A",
+      department: task.profiles?.department || "N/A",
+    })) || [];
+
+    return flattenedData as Task[];
+  }, [toast, selectedUserId, selectedDate, selectedPriority, selectedStatus, currentPage]);
 
   const { data: tasks = [], isLoading: loadingTasks, refetch: refetchUserTasks } = useQuery<Task[]>({
-    queryKey: ['userTasks', { userId: selectedUserId, date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus }],
+    queryKey: ['userTasks', { userId: selectedUserId, date: selectedDate?.toISOString(), priority: selectedPriority, status: selectedStatus, currentPage }],
     queryFn: fetchTasks,
   });
 
@@ -142,6 +173,21 @@ const UserTasksPage: React.FC = () => {
     if (description.length <= limit) return description;
     return description.substring(0, limit) + "...";
   };
+
+  const totalPages = Math.ceil(totalTasksCount / TASKS_PER_PAGE);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedUserId, selectedDate, selectedPriority, selectedStatus]);
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -255,7 +301,7 @@ const UserTasksPage: React.FC = () => {
                       <Badge variant="outline">{task.status}</Badge>
                       {/* Display user's first name for admin view */}
                       <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
-                        {users.find(u => u.id === task.user_id)?.first_name || "Unknown User"}
+                        {task.first_name || "Unknown User"}
                       </span>
                     </CardDescription>
                   </CardHeader>
@@ -282,6 +328,29 @@ const UserTasksPage: React.FC = () => {
               </motion.div>
             ))}
           </motion.div>
+        )}
+
+        {/* Pagination Controls */}
+        {tasks.length > 0 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1 || loadingTasks}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages || loadingTasks}
+            >
+              Next
+            </Button>
+          </div>
         )}
       </div>
     </div>
