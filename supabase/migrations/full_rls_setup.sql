@@ -1,12 +1,13 @@
--- Enable RLS on the profiles table
+-- Enable RLS on the profiles table if not already enabled
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Policy for profiles: Allow authenticated users to select all profiles
--- This is necessary for tasks to join with profile data and display user names/departments.
-CREATE POLICY "Allow authenticated users to select profiles"
-ON profiles FOR SELECT
-TO authenticated
-USING (true);
+-- Assuming "Allow authenticated users to select profiles" policy already exists.
+-- If not, you would need to create it, but the error indicates it's there.
+-- Example of what it should look like if it needed to be created:
+-- CREATE POLICY "Allow authenticated users to select profiles"
+-- ON profiles FOR SELECT
+-- TO authenticated
+-- USING (true);
 
 -- Enable RLS on the tasks table
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
