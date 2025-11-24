@@ -19,8 +19,8 @@ RETURNS TABLE (
     id uuid,
     title text,
     description text,
-    status text,
-    priority text,
+    status text, -- Keep as text for client-side compatibility
+    priority text, -- Keep as text for client-side compatibility
     due_date timestamptz,
     created_at timestamptz,
     user_id uuid,
@@ -46,8 +46,8 @@ BEGIN
         t.id,
         t.title,
         t.description,
-        t.status,
-        t.priority,
+        t.status::text, -- Explicitly cast to text to match RETURNS TABLE
+        t.priority::text, -- Explicitly cast to text to match RETURNS TABLE
         t.due_date,
         t.created_at,
         t.user_id,
@@ -62,8 +62,8 @@ BEGIN
         (user_id_filter IS NULL OR t.user_id = user_id_filter)
         AND (start_date_iso IS NULL OR t.created_at >= _start_date)
         AND (end_date_iso IS NULL OR t.created_at <= _end_date)
-        AND (priority_filter IS NULL OR t.priority = priority_filter::public.priority_enum) -- Corrected cast
-        AND (status_filter IS NULL OR t.status = status_filter::public.status_enum)       -- Corrected cast
+        AND (priority_filter IS NULL OR t.priority = priority_filter::public.priority_enum)
+        AND (status_filter IS NULL OR t.status = status_filter::public.status_enum)
         AND (department_name IS NULL OR p.department = department_name);
 END;
 $$;
