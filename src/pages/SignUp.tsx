@@ -75,9 +75,9 @@ const SignUp = () => {
 
         toast({
           title: "Sign Up Successful!",
-          description: "Please check your email to confirm your account.",
+          description: "You have been successfully registered and logged in.",
         });
-        navigate("/login"); // Redirect to login after successful sign-up
+        navigate("/dashboard", { state: { fromLogin: true } }); // Redirect directly to dashboard
       }
     } catch (error: any) {
       toast({
