@@ -60,10 +60,10 @@ const AppRoutes = () => {
           <Route path="/tasks/all" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><AllTasksPage /></motion.div>} />
           <Route path="/tasks/:status" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><TaskListPage /></motion.div>} />
           <Route path="/settings" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><SettingsPage /></motion.div>} />
+          <Route path="/task-summary" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><TaskSummaryPage /></motion.div>} /> {/* Moved out of AdminRouteGuard */}
           {/* Admin Routes protected by AdminRouteGuard */}
           <Route element={<AdminRouteGuard />}>
             <Route path="/admin/users-tasks" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><UserTasksPage /></motion.div>} />
-            <Route path="/admin/task-summary" element={<motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}><TaskSummaryPage /></motion.div>} />
           </Route>
         </Route>
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

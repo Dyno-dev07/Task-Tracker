@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import * as XLSX from 'xlsx';
+import { useOutletContext } from "react-router-dom"; // Import useOutletContext
 
 interface TaskWithProfile {
   id: string;
@@ -40,14 +41,31 @@ interface UserProfile {
   department: string;
 }
 
-const AdminTaskReportGenerator: React.FC = () => {
+interface AuthLayoutContext {
+  userRole: "Admin" | "Regular" | null;
+}
+
+const TaskReportGenerator: React.FC = () => {
   const { toast } = useToast();
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
   const [selectedDepartment, setSelectedDepartment] = useState<string | "all">("all");
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Fetch all users to get department info for filters
+  const { userRole } = useOutletContext<AuthLayoutContext>(); // Get userRole from AuthLayout context
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    fetchUserId();
+  }, []);
+
+  // Fetch all users to get department info for filters (only for admins)
   const { data: users = [], isLoading: loadingUsers } = useQuery<UserProfile[]>({
     queryKey: ['allUsersForAdminReport'],
     queryFn: async () => {
@@ -64,6 +82,7 @@ const AdminTaskReportGenerator: React.FC = () => {
       }
       return data as UserProfile[];
     },
+    enabled: userRole === "Admin", // Only fetch users if the current user is an Admin
   });
 
   const departments = Array.from(new Set(users.map(user => user.department))).sort();
@@ -85,13 +104,41 @@ const AdminTaskReportGenerator: React.FC = () => {
         return;
       }
 
+      let userIdFilter: string | null = null;
+      let departmentNameFilter: string | null = null;
+
+      if (userRole === "Regular") {
+        if (!currentUserId) {
+          toast({
+            title: "Authentication Error",
+            description: "Could not retrieve your user ID. Please try logging in again.",
+            variant: "destructive",
+          });
+          setIsGeneratingReport(false);
+          return;
+        }
+        userIdFilter = currentUserId;
+        departmentNameFilter = null; // Regular users don't filter by department
+      } else if (userRole === "Admin") {
+        userIdFilter = null; // Admins can see all users' tasks
+        departmentNameFilter = selectedDepartment === "all" ? null : selectedDepartment;
+      } else {
+        toast({
+          title: "Permission Denied",
+          description: "You do not have permission to generate this report.",
+          variant: "destructive",
+        });
+        setIsGeneratingReport(false);
+        return;
+      }
+
       const { data: tasks, error } = await supabase.rpc('get_all_tasks_with_profiles', {
-        user_id_filter: null,
+        user_id_filter: userIdFilter,
         start_date_iso: startDate.toISOString(),
         end_date_iso: endDate.toISOString(),
         priority_filter: null,
         status_filter: null,
-        department_name: selectedDepartment === "all" ? null : selectedDepartment,
+        department_name: departmentNameFilter,
       });
 
       if (error) throw error;
@@ -112,16 +159,20 @@ const AdminTaskReportGenerator: React.FC = () => {
       const ws = XLSX.utils.json_to_sheet(reportData);
 
       // Add a title row
-      const title = "Admin Task Summary Report";
+      const title = userRole === "Admin" ? "Admin Task Summary Report" : "My Task Report";
       const periodText = `Period: ${format(startDate, "PPP")} - ${format(endDate, "PPP")}`;
-      const departmentText = `Department: ${selectedDepartment === "all" ? "All" : selectedDepartment}`;
+      const departmentText = userRole === "Admin" ? `Department: ${selectedDepartment === "all" ? "All" : selectedDepartment}` : "";
 
       XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: "A1" });
       XLSX.utils.sheet_add_aoa(ws, [[periodText]], { origin: "A2" });
-      XLSX.utils.sheet_add_aoa(ws, [[departmentText]], { origin: "A3" });
+      if (userRole === "Admin") {
+        XLSX.utils.sheet_add_aoa(ws, [[departmentText]], { origin: "A3" });
+      }
+      
 
-      // Move headers down to row 5
-      XLSX.utils.sheet_add_json(ws, reportData, { origin: "A5", skipHeader: false });
+      // Move headers down to row 5 (or 4 if no department text for regular user)
+      const headerRowOffset = userRole === "Admin" ? 4 : 3; // 0-indexed, so row 5 is index 4
+      XLSX.utils.sheet_add_json(ws, reportData, { origin: `A${headerRowOffset + 1}`, skipHeader: false });
 
       // Set column widths
       const wscols = [
@@ -137,8 +188,8 @@ const AdminTaskReportGenerator: React.FC = () => {
       ];
       ws['!cols'] = wscols;
 
-      // Make header row bold (row 5)
-      const headerRowIndex = 4; // 0-indexed, so row 5 is index 4
+      // Make header row bold
+      const headerRowIndex = headerRowOffset;
       const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
       for (let C = range.s.c; C <= range.e.c; ++C) {
         const cell_address = XLSX.utils.encode_cell({ r: headerRowIndex, c: C });
@@ -210,7 +261,7 @@ const AdminTaskReportGenerator: React.FC = () => {
 
       XLSX.utils.book_append_sheet(wb, ws, "Task Report");
 
-      const filename = `Admin_Task_Report_${format(now, "yyyyMMdd_HHmmss")}.xlsx`;
+      const filename = `${userRole === "Admin" ? "Admin_Task_Report" : "My_Task_Report"}_${format(now, "yyyyMMdd_HHmmss")}.xlsx`;
       XLSX.writeFile(wb, filename);
 
       toast({
@@ -226,14 +277,14 @@ const AdminTaskReportGenerator: React.FC = () => {
     } finally {
       setIsGeneratingReport(false);
     }
-  }, [customStartDate, customEndDate, selectedDepartment, toast]);
+  }, [customStartDate, customEndDate, selectedDepartment, toast, userRole, currentUserId]);
 
   return (
     <Card className="p-6 space-y-4">
       <CardHeader>
         <CardTitle className="flex items-center justify-center gap-3">
           <FileText className="h-6 w-6 text-primary" />
-          Generate Detailed Task Report
+          {userRole === "Admin" ? "Generate Detailed Task Report" : "Generate My Task Report"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -303,26 +354,28 @@ const AdminTaskReportGenerator: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <label htmlFor="department-filter" className="w-full sm:w-auto text-left sm:text-right">Filter by Department:</label>
-          <Select onValueChange={(value: string | "all") => setSelectedDepartment(value)} value={selectedDepartment}>
-            <SelectTrigger id="department-filter" className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Select department" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
-              {loadingUsers ? (
-                <SelectItem value="loading" disabled>Loading departments...</SelectItem>
-              ) : (
-                departments.map((dept) => (
-                  <SelectItem key={dept} value={dept}>
-                        {dept}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-        </div>
+        {userRole === "Admin" && (
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <label htmlFor="department-filter" className="w-full sm:w-auto text-left sm:text-right">Filter by Department:</label>
+            <Select onValueChange={(value: string | "all") => setSelectedDepartment(value)} value={selectedDepartment}>
+              <SelectTrigger id="department-filter" className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
+                {loadingUsers ? (
+                  <SelectItem value="loading" disabled>Loading departments...</SelectItem>
+                ) : (
+                  departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>
+                          {dept}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <Button onClick={generateReport} disabled={isGeneratingReport || loadingUsers || !customStartDate || !customEndDate} className="w-full sm:w-auto">
           {isGeneratingReport ? (
@@ -342,4 +395,4 @@ const AdminTaskReportGenerator: React.FC = () => {
   );
 };
 
-export default AdminTaskReportGenerator;
+export default TaskReportGenerator;

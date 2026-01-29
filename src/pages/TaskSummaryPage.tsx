@@ -7,7 +7,7 @@ import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, Briefcase } from
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TaskStatsCard from "@/components/TaskStatsCard";
-import AdminTaskReportGenerator from "@/components/AdminTaskReportGenerator"; // Import the new component
+import TaskReportGenerator from "@/components/TaskReportGenerator"; // Updated import
 
 // Define a type for the RPC function's return value for counts
 interface TaskCounts {
@@ -140,28 +140,28 @@ const TaskSummaryPage: React.FC = () => {
               value={taskCounts?.total_tasks || 0}
               icon={<ListTodo />}
               iconColor="text-blue-500 dark:text-blue-400"
-              to="/admin/task-summary"
+              to="/task-summary"
             />
             <TaskStatsCard
               title="Pending Tasks"
               value={taskCounts?.pending_tasks || 0}
               icon={<Hourglass />}
               iconColor="text-yellow-500 dark:text-yellow-400"
-              to="/admin/task-summary"
+              to="/task-summary"
             />
             <TaskStatsCard
               title="In Progress"
               value={taskCounts?.in_progress_tasks || 0}
               icon={<PlayCircle />}
               iconColor="text-orange-500 dark:text-orange-400"
-              to="/admin/task-summary"
+              to="/task-summary"
             />
             <TaskStatsCard
               title="Completed Tasks"
               value={taskCounts?.completed_tasks || 0}
               icon={<CheckCircle />}
               iconColor="text-green-500 dark:text-green-400"
-              to="/admin/task-summary"
+              to="/task-summary"
             />
           </div>
         )}
@@ -189,8 +189,8 @@ const TaskSummaryPage: React.FC = () => {
           </div>
         )}
 
-        {/* New Admin Task Report Generator */}
-        <AdminTaskReportGenerator />
+        {/* New Task Report Generator */}
+        <TaskReportGenerator />
       </div>
     </div>
   );
