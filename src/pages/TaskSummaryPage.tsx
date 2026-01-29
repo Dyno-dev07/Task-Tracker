@@ -3,30 +3,11 @@
 import React, { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, FileText, Download, Briefcase } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, Briefcase } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TaskStatsCard from "@/components/TaskStatsCard";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { format, startOfMonth, endOfMonth } from "date-fns";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import EditTaskDialog from "@/components/EditTaskDialog";
-import DeleteTaskDialog from "@/components/DeleteTaskDialog";
+import AdminTaskReportGenerator from "@/components/AdminTaskReportGenerator"; // Import the new component
 
 // Define a type for the RPC function's return value for counts
 interface TaskCounts {
@@ -60,10 +41,6 @@ interface UserProfile {
 const TaskSummaryPage: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const [reportPeriod, setReportPeriod] = useState<"week" | "month">("week");
-  const [selectedReportDepartment, setSelectedReportDepartment] = useState<string | "all">("all");
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   // Fetch aggregate task counts using the RPC function
   const { data: taskCounts, isLoading: loadingSummaryCounts } = useQuery<TaskCounts>({
@@ -139,99 +116,6 @@ const TaskSummaryPage: React.FC = () => {
     return counts;
   }, [allTasksWithProfiles]);
 
-  const generateReport = useCallback(async () => {
-    setIsGeneratingReport(true);
-    try {
-      let startDate: Date;
-      let endDate: Date;
-      const now = new Date();
-
-      if (reportPeriod === "week") {
-        // Calculate the start of the current Friday-to-Thursday week
-        const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-        const fridayDay = 5; // Friday is 5
-
-        // Calculate days to subtract to get to the most recent Friday
-        const daysToSubtract = (currentDay + 7 - fridayDay) % 7;
-
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - daysToSubtract);
-        startDate.setHours(0, 0, 0, 0); // Set to start of the day
-
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6); // 6 days after Friday is Thursday
-        endDate.setHours(23, 59, 59, 999); // Set to end of the day
-      } else { // month
-        startDate = startOfMonth(now);
-        endDate = endOfMonth(now);
-      }
-
-      const { data: tasks, error } = await supabase.rpc('get_all_tasks_with_profiles', {
-        user_id_filter: null, // Consistent order
-        start_date_iso: startDate.toISOString(),
-        end_date_iso: endDate.toISOString(),
-        priority_filter: null,
-        status_filter: null,
-        department_name: selectedReportDepartment === "all" ? null : selectedReportDepartment, // Consistent order
-      });
-
-      if (error) throw error;
-
-      const doc = new jsPDF();
-      let yPos = 20;
-
-      doc.setFontSize(18);
-      doc.text("Task Summary Report", 14, yPos);
-      yPos += 10;
-
-      doc.setFontSize(10);
-      doc.text(`Period: ${format(startDate, "PPP")} - ${format(endDate, "PPP")}`, 14, yPos);
-      yPos += 7;
-      doc.text(`Department: ${selectedReportDepartment === "all" ? "All" : selectedReportDepartment}`, 14, yPos);
-      yPos += 15;
-
-      // Updated table columns to include Description and Created At
-      const tableColumn = ["User", "Department", "Title", "Description", "Status", "Priority", "Due Date", "Created At", "Remarks"];
-      const tableRows: any[] = [];
-
-      tasks?.forEach((task: TaskWithProfile) => {
-        const taskData = [
-          task.first_name || "N/A",
-          task.department || "N/A",
-          task.title,
-          task.description || "N/A", // Added description
-          task.status,
-          task.priority,
-          task.due_date ? format(new Date(task.due_date), "PPP") : "N/A",
-          format(new Date(task.created_at), "PPP"), // Added created_at
-          task.remarks || "N/A", // Added remarks
-        ];
-        tableRows.push(taskData);
-      });
-
-      autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: yPos,
-      });
-
-      doc.save(`Task_Report_${format(now, "yyyyMMdd_HHmmss")}.pdf`);
-
-      toast({
-        title: "Report Generated!",
-        description: "Your PDF report has been successfully downloaded.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Failed to generate report",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingReport(false);
-    }
-  }, [reportPeriod, selectedReportDepartment, toast]);
-
   const handleTaskChange = () => {
     queryClient.invalidateQueries({ queryKey: ['allTasksWithProfiles'] });
     queryClient.invalidateQueries({ queryKey: ['allTasksSummaryCounts'] });
@@ -305,63 +189,8 @@ const TaskSummaryPage: React.FC = () => {
           </div>
         )}
 
-        <Card className="p-6 space-y-4 mt-12">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-center gap-3">
-              <FileText className="h-6 w-6 text-primary" />
-              Generate Task Report
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <label htmlFor="report-period" className="w-full sm:w-auto text-left sm:text-right">Report Period:</label>
-              <Select onValueChange={(value: "week" | "month") => setReportPeriod(value)} value={reportPeriod}>
-                <SelectTrigger id="report-period" className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Select period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="week">Current Week (Fri-Thu)</SelectItem>
-                  <SelectItem value="month">Current Month</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <label htmlFor="department-filter" className="w-full sm:w-auto text-left sm:text-right">Filter by Department:</label>
-              <Select onValueChange={(value: string | "all") => setSelectedReportDepartment(value)} value={selectedReportDepartment}>
-                <SelectTrigger id="department-filter" className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Select department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  {loadingUsers ? (
-                    <SelectItem value="loading" disabled>Loading departments...</SelectItem>
-                  ) : (
-                    departments.map((dept) => (
-                      <SelectItem key={dept} value={dept}>
-                        {dept}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button onClick={generateReport} disabled={isGeneratingReport || loadingUsers} className="w-full sm:w-auto">
-              {isGeneratingReport ? (
-                <span>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
-                  Generating...
-                </span>
-              ) : (
-                <span>
-                  <Download className="mr-2 h-4 w-4 inline-block" />
-                  Generate PDF Report
-                </span>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+        {/* New Admin Task Report Generator */}
+        <AdminTaskReportGenerator />
       </div>
     </div>
   );
