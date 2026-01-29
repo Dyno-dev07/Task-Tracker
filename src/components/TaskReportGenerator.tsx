@@ -147,7 +147,14 @@ const TaskReportGenerator: React.FC<TaskReportGeneratorProps> = ({ adminDeleteBu
 
       if (error) throw error;
 
-      const reportData = tasks?.map((task: TaskWithProfile) => ({
+      // Sort tasks by first_name alphabetically
+      const sortedTasks = tasks?.sort((a, b) => {
+        const nameA = a.first_name || "";
+        const nameB = b.first_name || "";
+        return nameA.localeCompare(nameB);
+      }) || [];
+
+      const reportData = sortedTasks.map((task: TaskWithProfile) => ({
         "User": task.first_name || "N/A",
         "Department": task.department || "N/A",
         "Title": task.title,
@@ -211,7 +218,7 @@ const TaskReportGenerator: React.FC<TaskReportGeneratorProps> = ({ adminDeleteBu
       if (statusColIndex !== -1 || priorityColIndex !== -1) {
         for (let R = 0; R < reportData.length; ++R) {
           const dataRowIndex = headerRowIndex + 1 + R; // Data starts after header row
-          const task = tasks?.[R]; // Get the original task object for status/priority values
+          const task = sortedTasks?.[R]; // Get the original task object for status/priority values
 
           if (task) {
             // Status column styling
