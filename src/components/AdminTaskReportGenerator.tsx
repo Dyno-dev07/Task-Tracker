@@ -10,16 +10,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Download, Loader2, CalendarIcon } from "lucide-react";
+import { FileText, Download, Loader2, CalendarIcon, FileSpreadsheet } from "lucide-react"; // Added FileSpreadsheet icon
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import * as XLSX from 'xlsx'; // Import xlsx library
 
 interface TaskWithProfile {
   id: string;
@@ -97,50 +96,28 @@ const AdminTaskReportGenerator: React.FC = () => {
 
       if (error) throw error;
 
-      const doc = new jsPDF();
-      let yPos = 20;
+      const reportData = tasks?.map((task: TaskWithProfile) => ({
+        "User": task.first_name || "N/A",
+        "Department": task.department || "N/A",
+        "Title": task.title,
+        "Description": task.description || "N/A",
+        "Status": task.status,
+        "Priority": task.priority,
+        "Due Date": task.due_date ? format(new Date(task.due_date), "PPP") : "N/A",
+        "Created At": format(new Date(task.created_at), "PPP"),
+        "Remarks": task.remarks || "N/A",
+      })) || [];
 
-      doc.setFontSize(18);
-      doc.text("Admin Task Summary Report", 14, yPos);
-      yPos += 10;
+      const ws = XLSX.utils.json_to_sheet(reportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Task Report");
 
-      doc.setFontSize(10);
-      const periodText = `Custom Range: ${format(startDate, "PPP")} - ${format(endDate, "PPP")}`;
-
-      doc.text(`Period: ${periodText}`, 14, yPos);
-      yPos += 7;
-      doc.text(`Department: ${selectedDepartment === "all" ? "All" : selectedDepartment}`, 14, yPos);
-      yPos += 15;
-
-      const tableColumn = ["User", "Department", "Title", "Description", "Status", "Priority", "Due Date", "Created At", "Remarks"];
-      const tableRows: any[] = [];
-
-      tasks?.forEach((task: TaskWithProfile) => {
-        const taskData = [
-          task.first_name || "N/A",
-          task.department || "N/A",
-          task.title,
-          task.description || "N/A",
-          task.status,
-          task.priority,
-          task.due_date ? format(new Date(task.due_date), "PPP") : "N/A",
-          format(new Date(task.created_at), "PPP"),
-          task.remarks || "N/A",
-        ];
-        tableRows.push(taskData);
-      });
-
-      autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: yPos,
-      });
-
-      doc.save(`Admin_Task_Report_${format(now, "yyyyMMdd_HHmmss")}.pdf`);
+      const filename = `Admin_Task_Report_${format(now, "yyyyMMdd_HHmmss")}.xlsx`;
+      XLSX.writeFile(wb, filename);
 
       toast({
         title: "Report Generated!",
-        description: "Your PDF report has been successfully downloaded.",
+        description: "Your Excel report has been successfully downloaded.",
       });
     } catch (error: any) {
       toast({
@@ -257,8 +234,8 @@ const AdminTaskReportGenerator: React.FC = () => {
             </span>
           ) : (
             <span>
-              <Download className="mr-2 h-4 w-4 inline-block" />
-              Generate PDF Report
+              <FileSpreadsheet className="mr-2 h-4 w-4 inline-block" />
+              Generate Excel Report
             </span>
           )}
         </Button>
