@@ -43,8 +43,8 @@ const AdminDeleteTasksDialog: React.FC = () => {
     setIsDeleting(true);
     try {
       const { error } = await supabase.rpc('delete_tasks_by_date_range', {
-        start_date_iso: startOfDay(startDate).toISOString(),
-        end_date_iso: endOfDay(endDate).toISOString(),
+        end_date_iso: endOfDay(endDate).toISOString(),   // Reversed order
+        start_date_iso: startOfDay(startDate).toISOString(), // Reversed order
       });
 
       if (error) throw error;

@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION delete_tasks_by_date_range(
-    start_date_iso TEXT,
-    end_date_iso TEXT
+    end_date_iso TEXT, -- Changed order
+    start_date_iso TEXT -- Changed order
 )
 RETURNS VOID AS $$
 DECLARE
