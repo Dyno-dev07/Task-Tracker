@@ -138,14 +138,74 @@ const AdminTaskReportGenerator: React.FC = () => {
       ws['!cols'] = wscols;
 
       // Make header row bold (row 5)
-      const headerRow = 5;
+      const headerRowIndex = 4; // 0-indexed, so row 5 is index 4
       const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
       for (let C = range.s.c; C <= range.e.c; ++C) {
-        const cell_address = XLSX.utils.encode_cell({ r: headerRow - 1, c: C }); // Adjust for 0-indexed row
-        if (!ws[cell_address]) continue;
-        ws[cell_address].s = {
-          font: { bold: true }
-        };
+        const cell_address = XLSX.utils.encode_cell({ r: headerRowIndex, c: C });
+        if (ws[cell_address]) {
+          ws[cell_address].s = {
+            font: { bold: true }
+          };
+        }
+      }
+
+      // Apply color coding to Status and Priority columns
+      const statusColIndex = reportData.length > 0 ? Object.keys(reportData[0]).indexOf("Status") : -1;
+      const priorityColIndex = reportData.length > 0 ? Object.keys(reportData[0]).indexOf("Priority") : -1;
+
+      if (statusColIndex !== -1 || priorityColIndex !== -1) {
+        for (let R = 0; R < reportData.length; ++R) {
+          const dataRowIndex = headerRowIndex + 1 + R; // Data starts after header row
+          const task = tasks?.[R]; // Get the original task object for status/priority values
+
+          if (task) {
+            // Status column styling
+            if (statusColIndex !== -1) {
+              const statusCellAddress = XLSX.utils.encode_cell({ r: dataRowIndex, c: statusColIndex });
+              if (ws[statusCellAddress]) {
+                let bgColor = "FFFFFF"; // Default white
+                switch (task.status) {
+                  case "pending":
+                    bgColor = "FFFF00"; // Yellow
+                    break;
+                  case "in-progress":
+                    bgColor = "FFA500"; // Orange
+                    break;
+                  case "completed":
+                    bgColor = "00FF00"; // Green
+                    break;
+                }
+                ws[statusCellAddress].s = {
+                  fill: { fgColor: { rgb: bgColor } },
+                  alignment: { horizontal: "center" }
+                };
+              }
+            }
+
+            // Priority column styling
+            if (priorityColIndex !== -1) {
+              const priorityCellAddress = XLSX.utils.encode_cell({ r: dataRowIndex, c: priorityColIndex });
+              if (ws[priorityCellAddress]) {
+                let bgColor = "FFFFFF"; // Default white
+                switch (task.priority) {
+                  case "low":
+                    bgColor = "D3D3D3"; // Light Gray
+                    break;
+                  case "medium":
+                    bgColor = "ADD8E6"; // Light Blue
+                    break;
+                  case "high":
+                    bgColor = "FF0000"; // Red
+                    break;
+                }
+                ws[priorityCellAddress].s = {
+                  fill: { fgColor: { rgb: bgColor } },
+                  alignment: { horizontal: "center" }
+                };
+              }
+            }
+          }
+        }
       }
 
       XLSX.utils.book_append_sheet(wb, ws, "Task Report");
