@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Download, Loader2, CalendarIcon, FileSpreadsheet } from "lucide-react"; // Added FileSpreadsheet icon
+import { FileText, Download, Loader2, CalendarIcon, FileSpreadsheet } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfDay, endOfDay } from "date-fns";
@@ -18,7 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import * as XLSX from 'xlsx'; // Import xlsx library
+import * as XLSX from 'xlsx';
 
 interface TaskWithProfile {
   id: string;
@@ -108,8 +108,46 @@ const AdminTaskReportGenerator: React.FC = () => {
         "Remarks": task.remarks || "N/A",
       })) || [];
 
-      const ws = XLSX.utils.json_to_sheet(reportData);
       const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(reportData);
+
+      // Add a title row
+      const title = "Admin Task Summary Report";
+      const periodText = `Period: ${format(startDate, "PPP")} - ${format(endDate, "PPP")}`;
+      const departmentText = `Department: ${selectedDepartment === "all" ? "All" : selectedDepartment}`;
+
+      XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: "A1" });
+      XLSX.utils.sheet_add_aoa(ws, [[periodText]], { origin: "A2" });
+      XLSX.utils.sheet_add_aoa(ws, [[departmentText]], { origin: "A3" });
+
+      // Move headers down to row 5
+      XLSX.utils.sheet_add_json(ws, reportData, { origin: "A5", skipHeader: false });
+
+      // Set column widths
+      const wscols = [
+        { wch: 15 }, // User
+        { wch: 18 }, // Department
+        { wch: 25 }, // Title
+        { wch: 40 }, // Description
+        { wch: 12 }, // Status
+        { wch: 12 }, // Priority
+        { wch: 15 }, // Due Date
+        { wch: 15 }, // Created At
+        { wch: 30 }, // Remarks
+      ];
+      ws['!cols'] = wscols;
+
+      // Make header row bold (row 5)
+      const headerRow = 5;
+      const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cell_address = XLSX.utils.encode_cell({ r: headerRow - 1, c: C }); // Adjust for 0-indexed row
+        if (!ws[cell_address]) continue;
+        ws[cell_address].s = {
+          font: { bold: true }
+        };
+      }
+
       XLSX.utils.book_append_sheet(wb, ws, "Task Report");
 
       const filename = `Admin_Task_Report_${format(now, "yyyyMMdd_HHmmss")}.xlsx`;
