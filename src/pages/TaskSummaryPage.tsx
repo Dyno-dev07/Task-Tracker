@@ -7,7 +7,9 @@ import { Loader2, ListTodo, Hourglass, PlayCircle, CheckCircle, Briefcase } from
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TaskStatsCard from "@/components/TaskStatsCard";
-import TaskReportGenerator from "@/components/TaskReportGenerator"; // Updated import
+import TaskReportGenerator from "@/components/TaskReportGenerator";
+import AdminDeleteTasksDialog from "@/components/AdminDeleteTasksDialog"; // Import new component
+import { useOutletContext } from "react-router-dom"; // Import useOutletContext
 
 // Define a type for the RPC function's return value for counts
 interface TaskCounts {
@@ -38,9 +40,14 @@ interface UserProfile {
   department: string;
 }
 
+interface AuthLayoutContext {
+  userRole: "Admin" | "Regular" | null;
+}
+
 const TaskSummaryPage: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { userRole } = useOutletContext<AuthLayoutContext>(); // Get userRole from AuthLayout context
 
   // Fetch aggregate task counts using the RPC function
   const { data: taskCounts, isLoading: loadingSummaryCounts } = useQuery<TaskCounts>({
@@ -189,8 +196,15 @@ const TaskSummaryPage: React.FC = () => {
           </div>
         )}
 
-        {/* New Task Report Generator */}
+        {/* Task Report Generator */}
         <TaskReportGenerator />
+
+        {/* Admin Delete Tasks Dialog - only visible to admins */}
+        {userRole === "Admin" && (
+          <div className="w-full max-w-md mx-auto mt-8">
+            <AdminDeleteTasksDialog />
+          </div>
+        )}
       </div>
     </div>
   );
