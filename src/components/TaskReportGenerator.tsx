@@ -45,7 +45,11 @@ interface AuthLayoutContext {
   userRole: "Admin" | "Regular" | null;
 }
 
-const TaskReportGenerator: React.FC = () => {
+interface TaskReportGeneratorProps {
+  adminDeleteButton?: React.ReactNode; // New prop for the delete button
+}
+
+const TaskReportGenerator: React.FC<TaskReportGeneratorProps> = ({ adminDeleteButton }) => {
   const { toast } = useToast();
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
@@ -377,19 +381,22 @@ const TaskReportGenerator: React.FC = () => {
           </div>
         )}
 
-        <Button onClick={generateReport} disabled={isGeneratingReport || loadingUsers || !customStartDate || !customEndDate} className="w-full sm:w-auto">
-          {isGeneratingReport ? (
-            <span>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
-              Generating...
-            </span>
-          ) : (
-            <span>
-              <FileSpreadsheet className="mr-2 h-4 w-4 inline-block" />
-              Generate Excel Report
-            </span>
-          )}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+          <Button onClick={generateReport} disabled={isGeneratingReport || loadingUsers || !customStartDate || !customEndDate} className="w-full sm:w-auto">
+            {isGeneratingReport ? (
+              <span>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />
+                Generating...
+              </span>
+            ) : (
+              <span>
+                <FileSpreadsheet className="mr-2 h-4 w-4 inline-block" />
+                Generate Excel Report
+              </span>
+            )}
+          </Button>
+          {userRole === "Admin" && adminDeleteButton}
+        </div>
       </CardContent>
     </Card>
   );

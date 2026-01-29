@@ -197,14 +197,9 @@ const TaskSummaryPage: React.FC = () => {
         )}
 
         {/* Task Report Generator */}
-        <TaskReportGenerator />
-
-        {/* Admin Delete Tasks Dialog - only visible to admins */}
-        {userRole === "Admin" && (
-          <div className="w-full max-w-md mx-auto mt-8">
-            <AdminDeleteTasksDialog />
-          </div>
-        )}
+        <TaskReportGenerator
+          adminDeleteButton={userRole === "Admin" ? <AdminDeleteTasksDialog /> : undefined}
+        />
       </div>
     </div>
   );
