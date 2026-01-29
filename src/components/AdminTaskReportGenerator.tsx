@@ -41,7 +41,7 @@ interface UserProfile {
   department: string;
 }
 
-type PeriodType = "all" | "day" | "week" | "month" | "year";
+type PeriodType = "all" | "day" | "week" | "month" | "year" | "custom";
 
 const AdminTaskReportGenerator: React.FC = () => {
   const { toast } = useToast();
@@ -49,6 +49,8 @@ const AdminTaskReportGenerator: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
   const [selectedMonth, setSelectedMonth] = useState<string | "all">("all"); // 0-11 as strings
   const [selectedYear, setSelectedYear] = useState<string | "all">("all");
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
   const [selectedDepartment, setSelectedDepartment] = useState<string | "all">("all");
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
@@ -96,9 +98,8 @@ const AdminTaskReportGenerator: React.FC = () => {
         startDate = startOfDay(selectedDay);
         endDate = endOfDay(selectedDay);
       } else if (periodType === "week" && selectedDay) {
-        // Week from Sunday to Saturday
-        startDate = startOfWeek(selectedDay, { weekStartsOn: 0 }); // Sunday
-        endDate = endOfWeek(selectedDay, { weekStartsOn: 0 }); // Saturday
+        startDate = startOfWeek(selectedDay, { weekStartsOn: 0 });
+        endDate = endOfWeek(selectedDay, { weekStartsOn: 0 });
       } else if (periodType === "month" && selectedMonth !== "all" && selectedYear !== "all") {
         const yearNum = parseInt(selectedYear);
         const monthNum = parseInt(selectedMonth);
@@ -108,6 +109,9 @@ const AdminTaskReportGenerator: React.FC = () => {
         const yearNum = parseInt(selectedYear);
         startDate = startOfYear(new Date(yearNum, 0, 1));
         endDate = endOfYear(new Date(yearNum, 11, 31));
+      } else if (periodType === "custom" && customStartDate && customEndDate) {
+        startDate = startOfDay(customStartDate);
+        endDate = endOfDay(customEndDate);
       }
       // If periodType is "all", startDate and endDate remain null, fetching all tasks.
 
@@ -131,7 +135,9 @@ const AdminTaskReportGenerator: React.FC = () => {
 
       doc.setFontSize(10);
       let periodText = "All Time";
-      if (startDate && endDate) {
+      if (periodType === "custom" && customStartDate && customEndDate) {
+        periodText = `Custom Range: ${format(customStartDate, "PPP")} - ${format(customEndDate, "PPP")}`;
+      } else if (startDate && endDate) {
         periodText = `${format(startDate, "PPP")} - ${format(endDate, "PPP")}`;
       } else if (periodType === "year" && selectedYear !== "all") {
         periodText = `Year: ${selectedYear}`;
@@ -187,7 +193,7 @@ const AdminTaskReportGenerator: React.FC = () => {
     } finally {
       setIsGeneratingReport(false);
     }
-  }, [periodType, selectedDay, selectedMonth, selectedYear, selectedDepartment, toast, months, years]);
+  }, [periodType, selectedDay, selectedMonth, selectedYear, customStartDate, customEndDate, selectedDepartment, toast, months, years]);
 
   return (
     <Card className="p-6 space-y-4">
@@ -206,6 +212,8 @@ const AdminTaskReportGenerator: React.FC = () => {
             setSelectedDay(undefined);
             setSelectedMonth("all");
             setSelectedYear("all");
+            setCustomStartDate(undefined);
+            setCustomEndDate(undefined);
           }} value={periodType}>
             <SelectTrigger id="period-type" className="w-full sm:w-[180px]">
               <SelectValue placeholder="Select period type" />
@@ -216,6 +224,7 @@ const AdminTaskReportGenerator: React.FC = () => {
               <SelectItem value="week">Specific Week</SelectItem>
               <SelectItem value="month">Specific Month</SelectItem>
               <SelectItem value="year">Specific Year</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -284,6 +293,68 @@ const AdminTaskReportGenerator: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        )}
+
+        {periodType === "custom" && (
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <label htmlFor="custom-start-date" className="w-full sm:w-auto text-left sm:text-right">Start Date:</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full sm:w-[180px] justify-start text-left font-normal",
+                    !customStartDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customStartDate ? format(customStartDate, "PPP") : <span>Pick start date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customStartDate}
+                  onSelect={setCustomStartDate}
+                  initialFocus
+                />
+                {customStartDate && (
+                  <div className="p-2">
+                    <Button variant="ghost" onClick={() => setCustomStartDate(undefined)} className="w-full">Clear Start Date</Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+
+            <label htmlFor="custom-end-date" className="w-full sm:w-auto text-left sm:text-right">End Date:</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full sm:w-[180px] justify-start text-left font-normal",
+                    !customEndDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customEndDate ? format(customEndDate, "PPP") : <span>Pick end date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customEndDate}
+                  onSelect={setCustomEndDate}
+                  initialFocus
+                />
+                {customEndDate && (
+                  <div className="p-2">
+                    <Button variant="ghost" onClick={() => setCustomEndDate(undefined)} className="w-full">Clear End Date</Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         )}
 
